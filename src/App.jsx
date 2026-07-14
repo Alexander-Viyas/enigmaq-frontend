@@ -375,7 +375,7 @@ export default function App() {
         editingTrade ? (
           <JournaledTradeModal trade={editingTrade} onClose={() => { setIsTradeModalOpen(false); setEditingTrade(null); }} />
         ) : (
-          <TradeModal trade={null} onClose={() => setIsTradeModalOpen(false)} onSave={handleSaveTrade} onDelete={handleDeleteTrade} />
+          <TradeModal trade={null} onClose={() => setIsTradeModalOpen(false)} onSave={handleSaveTrade} onDelete={handleDeleteTrade} setCurrentView={setCurrentView} />
         )
       )}
       {isDayModalOpen && <DayTradesModal date={selectedDayTrades.date} trades={selectedDayTrades.trades} onClose={() => setIsDayModalOpen(false)} onEdit={(t) => { setIsDayModalOpen(false); openEditModal(t); }} />}
@@ -768,18 +768,18 @@ function TradeLogView({ trades, onEdit }) {
   };
 
   return (
-    <div className="space-y-4 max-w-[1500px] mx-auto">
+    <div className="space-y-4 max-w-[1500px] mx-auto text-slate-800 dark:text-gray-100">
       <div className="grid grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Net cumulative P&L</div><div className={`text-xl font-bold mt-1.5 ${stats.net>=0?'text-green-600':'text-red-600'}`}>{formatCurrency(stats.net)}</div></div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Profit Factor</div><div className="text-xl font-bold mt-1.5">{stats.pf === Infinity ? '∞' : stats.pf.toFixed(2)}</div></div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Trade Win %</div><div className="flex justify-between mt-1.5"><div className="text-xl font-bold">{formatPercent(stats.winRate)}</div><div className="flex gap-1"><span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{stats.w} W</span><span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{stats.be} BE</span><span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{stats.l} L</span></div></div></div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Avg Win/Loss</div><div className="text-xl font-bold mt-1.5">{formatCurrency(stats.avgW)} / {formatCurrency(stats.avgL)}</div></div>
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Net cumulative P&L</div><div className={`text-xl font-bold mt-1.5 ${stats.net>=0?'text-green-600':'text-red-600'}`}>{formatCurrency(stats.net)}</div></div>
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Profit Factor</div><div className="text-xl font-bold mt-1.5 dark:text-white">{stats.pf === Infinity ? '∞' : stats.pf.toFixed(2)}</div></div>
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col justify-between"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Trade Win %</div><div className="flex justify-between mt-1.5"><div className="text-xl font-bold dark:text-white">{formatPercent(stats.winRate)}</div><div className="flex gap-1"><span className="bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 px-1.5 py-0.5 rounded text-[10px] font-bold">{stats.w} W</span><span className="bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-400 px-1.5 py-0.5 rounded text-[10px] font-bold">{stats.be} BE</span><span className="bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 px-1.5 py-0.5 rounded text-[10px] font-bold">{stats.l} L</span></div></div></div>
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5"><div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Avg Win/Loss</div><div className="text-xl font-bold mt-1.5 dark:text-white">{formatCurrency(stats.avgW)} / {formatCurrency(stats.avgL)}</div></div>
       </div>
       
       {/* Filters */}
       <div className="flex gap-3 items-center">
-        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search symbol or notes..." className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-400 shadow-sm min-w-[250px]" aria-label="Search trades" />
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-400 shadow-sm cursor-pointer" aria-label="Filter by status">
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search symbol or notes..." className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 text-slate-800 dark:text-white rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-400 shadow-sm min-w-[250px]" aria-label="Search trades" />
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 text-slate-800 dark:text-white rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-400 shadow-sm cursor-pointer" aria-label="Filter by status">
           <option value="All">All Status</option><option value="Win">Win</option><option value="Loss">Loss</option><option value="BE">Break Even</option>
         </select>
         {(searchQuery || statusFilter !== 'All') && (
@@ -787,25 +787,25 @@ function TradeLogView({ trades, onEdit }) {
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <div className="bg-white dark:bg-[#121212] rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-white/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap min-w-[1000px]">
-            <thead className="bg-gray-50 border-b border-gray-100 text-gray-400 text-[10px] uppercase tracking-wide select-none">
+            <thead className="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 text-gray-400 text-[10px] uppercase tracking-wide select-none">
               <tr>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('entryDate')}>Open Date<SortIcon column="entryDate"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('pnl')}>Net P&L<SortIcon column="pnl"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('symbol')}>Symbol<SortIcon column="symbol"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('pnl')}>Status<SortIcon column="pnl"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('exitDate')}>Close Date<SortIcon column="exitDate"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 text-right" onClick={() => handleSort('entryPrice')}>Entry Price<SortIcon column="entryPrice"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 text-right" onClick={() => handleSort('exitPrice')}>Exit Price<SortIcon column="exitPrice"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 text-right" onClick={() => handleSort('roi')}>Net ROI<SortIcon column="roi"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onClick={() => handleSort('entryDate')}>Open Date<SortIcon column="entryDate"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onClick={() => handleSort('pnl')}>Net P&L<SortIcon column="pnl"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onClick={() => handleSort('symbol')}>Symbol<SortIcon column="symbol"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onClick={() => handleSort('pnl')}>Status<SortIcon column="pnl"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onClick={() => handleSort('exitDate')}>Close Date<SortIcon column="exitDate"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-right" onClick={() => handleSort('entryPrice')}>Entry Price<SortIcon column="entryPrice"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-right" onClick={() => handleSort('exitPrice')}>Exit Price<SortIcon column="exitPrice"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-right" onClick={() => handleSort('roi')}>Net ROI<SortIcon column="roi"/></th>
                 <th className="px-4 py-3 font-bold">Strategy</th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('rulesFollowed')}>Rules<SortIcon column="rulesFollowed"/></th>
-                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 text-center" onClick={() => handleSort('score')}>Score<SortIcon column="score"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5" onClick={() => handleSort('rulesFollowed')}>Rules<SortIcon column="rulesFollowed"/></th>
+                <th className="px-4 py-3 font-bold cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-center" onClick={() => handleSort('score')}>Score<SortIcon column="score"/></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-white/5">
               {filteredAndSortedTrades.length === 0 ? (
                 <tr>
                   <td colSpan="11" className="px-4 py-10 text-center text-gray-400 font-bold">
@@ -813,18 +813,18 @@ function TradeLogView({ trades, onEdit }) {
                   </td>
                 </tr>
               ) : filteredAndSortedTrades.map(t => (
-                <tr key={t.id} onClick={() => onEdit(t)} className="hover:bg-orange-50 cursor-pointer transition-colors group">
-                  <td className="px-4 py-2.5 font-medium text-gray-500">{formatDate(t.entryDate)}</td>
+                <tr key={t.id} onClick={() => onEdit(t)} className="hover:bg-orange-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
+                  <td className="px-4 py-2.5 font-medium text-gray-500 dark:text-gray-400">{formatDate(t.entryDate)}</td>
                   <td className={`px-4 py-2.5 font-bold ${t.pnl>=0?'text-green-600':'text-red-600'}`}>{t.pnl>0?'+':''}{formatCurrency(t.pnl)}</td>
-                  <td className="px-4 py-2.5 font-bold">{t.symbol}</td>
-                  <td className="px-4 py-2.5"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.pnl>0?'bg-green-100 text-green-700':t.pnl<0?'bg-red-100 text-red-700':'bg-gray-100 text-gray-700'}`}>{t.pnl>0?'Win':t.pnl<0?'Loss':'BE'}</span></td>
-                  <td className="px-4 py-2.5 text-gray-500">{formatDate(t.exitDate)}</td>
-                  <td className="px-4 py-2.5 text-right font-medium">${t.entryPrice.toFixed(2)}</td>
-                  <td className="px-4 py-2.5 text-right font-medium">${t.exitPrice.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 font-bold dark:text-white">{t.symbol}</td>
+                  <td className="px-4 py-2.5"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.pnl>0?'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400':t.pnl<0?'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400':'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-400'}`}>{t.pnl>0?'Win':t.pnl<0?'Loss':'BE'}</span></td>
+                  <td className="px-4 py-2.5 text-gray-500 dark:text-gray-400">{formatDate(t.exitDate)}</td>
+                  <td className="px-4 py-2.5 text-right font-medium text-gray-500 dark:text-gray-300">${t.entryPrice.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 text-right font-medium text-gray-500 dark:text-gray-300">${t.exitPrice.toFixed(2)}</td>
                   <td className={`px-4 py-2.5 text-right font-bold ${t.pnl>=0?'text-green-600':'text-red-600'}`}>{formatPercent(t.pnl / (t.entryPrice * t.quantity))}</td>
-                  <td className="px-4 py-2.5"><div className="flex gap-1 flex-wrap max-w-[150px]">{t.tags?.map(tag => <span key={tag} className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] font-bold">{tag}</span>)}</div></td>
+                  <td className="px-4 py-2.5"><div className="flex gap-1 flex-wrap max-w-[150px]">{t.tags?.map(tag => <span key={tag} className="bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400 px-1.5 py-0.5 rounded text-[10px] font-bold">{tag}</span>)}</div></td>
                   <td className="px-4 py-2.5 text-center group-hover:scale-110 transition-transform">{t.rulesFollowed ? '✅' : '❌'}</td>
-                  <td className="px-4 py-2.5 font-bold text-center text-slate-700">{calcScore(t)}</td>
+                  <td className="px-4 py-2.5 font-bold text-center text-slate-700 dark:text-gray-300">{calcScore(t)}</td>
                 </tr>
               ))}
 
@@ -841,19 +841,19 @@ function StatsView({ trades }) {
   const dStats = useMemo(() => calculateTradeStats(trades), [trades]);
 
   return (
-    <div className="space-y-6 max-w-[1500px] mx-auto">
-      <div className="flex gap-6 border-b border-gray-200">
+    <div className="space-y-6 max-w-[1500px] mx-auto text-slate-800 dark:text-gray-100">
+      <div className="flex gap-6 border-b border-gray-200 dark:border-white/5">
         <button className="px-2 py-4 font-bold text-orange-500 border-b-2 border-orange-500">Details</button>
         <button className="px-2 py-4 font-bold text-gray-400">Overview</button>
       </div>
       <div className="flex gap-4 items-center">
-        <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 font-bold text-sm shadow-sm"><option>Net P&L</option></select>
-        <button className="flex items-center gap-2 text-sm font-bold bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm"><Download size={16}/> Export</button>
+        <select className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 font-bold text-sm shadow-sm dark:text-white"><option>Net P&L</option></select>
+        <button className="flex items-center gap-2 text-sm font-bold bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 dark:text-white"><Download size={16}/> Export</button>
       </div>
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[300px] relative">
+      <div className="bg-white dark:bg-[#121212] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 h-[300px] relative">
         <div className="absolute top-6 right-6 flex gap-2">
-           <select className="bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs font-bold"><option>Net P&L</option></select>
-           <div className="bg-gray-50 border border-gray-200 rounded flex overflow-hidden text-xs font-bold"><button className="px-3 py-1 bg-white">Day</button><button className="px-3 py-1">Week</button><button className="px-3 py-1">Month</button></div>
+           <select className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded px-2 py-1 text-xs font-bold dark:text-white"><option>Net P&L</option></select>
+           <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded flex overflow-hidden text-xs font-bold dark:text-white"><button className="px-3 py-1 bg-white dark:bg-white/10">Day</button><button className="px-3 py-1 dark:hover:bg-white/5">Week</button><button className="px-3 py-1 dark:hover:bg-white/5">Month</button></div>
         </div>
         <Line data={{ labels: trades.map(t=>formatDate(t.exitDate)).reverse(), datasets: [{ data: trades.map(t=>t.pnl).reverse(), borderColor: '#f5860a', borderWidth: 2, tension: 0.3 }] }} options={{ maintainAspectRatio: false, plugins: { legend: {display:false} } }} />
       </div>
@@ -862,21 +862,21 @@ function StatsView({ trades }) {
           {['Summary', 'Days', 'Trades'].map(t => <button key={t} onClick={()=>setTab(t)} className={`font-bold text-sm ${tab===t?'text-orange-500':'text-gray-400'}`}>{t}</button>)}
         </div>
         {tab === 'Summary' && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm grid grid-cols-4 gap-8 divide-x divide-gray-100">
+          <div className="bg-white dark:bg-[#121212] rounded-2xl p-8 shadow-sm grid grid-cols-4 gap-8 divide-x divide-gray-100 dark:divide-white/5 border border-transparent dark:border-white/5">
             <div className="flex flex-col gap-6 pr-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Net P&L</div><div className="text-xl font-bold">{formatCurrency(dStats.net)}</div></div>
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Win %</div><div className="text-xl font-bold">{formatPercent(dStats.winRate)}</div></div>
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Profit Factor</div><div className="text-xl font-bold">{dStats.pf === Infinity ? '∞' : dStats.pf.toFixed(2)}</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Net P&L</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.net)}</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Win %</div><div className="text-xl font-bold dark:text-white">{formatPercent(dStats.winRate)}</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Profit Factor</div><div className="text-xl font-bold dark:text-white">{dStats.pf === Infinity ? '∞' : dStats.pf.toFixed(2)}</div></div>
             </div>
             <div className="flex flex-col gap-6 px-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Trade Expectancy</div><div className="text-xl font-bold">{formatCurrency(dStats.ev)}</div></div>
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Hold Time</div><div className="text-xl font-bold">1d 4h</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Trade Expectancy</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.ev)}</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Hold Time</div><div className="text-xl font-bold dark:text-white">1d 4h</div></div>
             </div>
             <div className="flex flex-col gap-6 px-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Net Trade P&L</div><div className="text-xl font-bold">{formatCurrency(dStats.net / (trades.length||1))}</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Net Trade P&L</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.net / (trades.length||1))}</div></div>
             </div>
             <div className="flex flex-col gap-6 pl-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Logged Days</div><div className="text-xl font-bold">{new Set(trades.map(t=>t.exitDate.split('T')[0])).size}</div></div>
+               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Logged Days</div><div className="text-xl font-bold dark:text-white">{new Set(trades.map(t=>t.exitDate.split('T')[0])).size}</div></div>
             </div>
           </div>
         )}
@@ -906,14 +906,14 @@ function DayView({ trades, dashboardDate, onEdit }) {
   const dayWins = dayTrades.filter(t => t.pnl > 0).length;
   const availableDays = Object.keys(tradeDays).sort();
   return (
-    <div className="max-w-[1100px] mx-auto space-y-4">
+    <div className="max-w-[1100px] mx-auto space-y-4 text-slate-800 dark:text-gray-100">
       {/* Date selector */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 flex-wrap">
+      <div className="bg-white dark:bg-[#121212] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm p-4 flex items-center gap-3 flex-wrap">
         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Select Day</label>
         <select
           value={selectedDate}
           onChange={e => setSelectedDate(e.target.value)}
-          className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400"
+          className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-orange-400"
           aria-label="Select trading day"
         >
           {availableDays.length === 0 && <option value="">No trading days this month</option>}
@@ -930,18 +930,18 @@ function DayView({ trades, dashboardDate, onEdit }) {
       </div>
       {dayTrades.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3"><CalendarDays className="w-6 h-6 text-gray-400" /></div>
-          <p className="text-gray-500 font-bold">No trades on {formatDate(selectedDate)}</p>
+          <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3"><CalendarDays className="w-6 h-6 text-gray-400" /></div>
+          <p className="text-gray-500 dark:text-gray-300 font-bold">No trades on {formatDate(selectedDate)}</p>
           <p className="text-gray-400 text-sm mt-1">Select a day above that has trades, or log a new trade.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {dayTrades.map(t => (
-            <div key={t.id} onClick={() => onEdit(t)} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 border border-transparent transition-colors">
+            <div key={t.id} onClick={() => onEdit(t)} className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 dark:hover:border-orange-500/20 border border-transparent dark:border-white/5 transition-colors">
                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${t.pnl >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>{t.symbol.substring(0,2)}</div>
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${t.pnl >= 0 ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400'}`}>{t.symbol.substring(0,2)}</div>
                   <div>
-                    <div className="font-bold text-sm">{t.symbol} <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded font-bold ${t.side === 'Long' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>{t.side}</span></div>
+                    <div className="font-bold text-sm dark:text-white">{t.symbol} <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded font-bold ${t.side === 'Long' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400'}`}>{t.side}</span></div>
                     <div className="text-[11px] text-gray-400 font-medium mt-0.5">${t.entryPrice.toFixed(2)} → ${t.exitPrice.toFixed(2)} · {t.quantity} shares</div>
                   </div>
                </div>
@@ -985,40 +985,40 @@ function ProgressView({ trades }) {
   );
 
   return (
-    <div className="space-y-4 max-w-[1500px] mx-auto">
+    <div className="space-y-4 max-w-[1500px] mx-auto text-slate-800 dark:text-gray-100">
       <div className="grid grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Winning Streak</div>
-          <div className="text-xl font-bold text-green-600">{stats.streak} days ↗</div>
+          <div className="text-xl font-bold text-green-600 dark:text-green-400">{stats.streak} days ↗</div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Today's P&L</div>
           <div className={`text-xl font-bold ${stats.todayCount === 0 ? 'text-gray-400' : stats.todayPnL >= 0 ? 'text-green-600' : 'text-red-500'}`}>
             {stats.todayCount === 0 ? 'No trades today' : `${stats.todayPnL > 0 ? '+' : ''}${formatCurrency(stats.todayPnL)}`}
           </div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Rules Followed</div>
-          <div className="text-xl font-bold">{formatPercent(stats.rulesPct)}</div>
-          <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-orange-400 rounded-full" style={{width:`${stats.rulesPct*100}%`}}></div></div>
+          <div className="text-xl font-bold dark:text-white">{formatPercent(stats.rulesPct)}</div>
+          <div className="mt-2 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div className="h-full bg-orange-400 rounded-full" style={{width:`${stats.rulesPct*100}%`}}></div></div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Total Trades</div>
-          <div className="text-xl font-bold">{stats.total}</div>
+          <div className="text-xl font-bold dark:text-white">{stats.total}</div>
           <div className="flex gap-1.5 mt-1.5">
-            <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">{stats.wins} W</span>
-            <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded">{stats.losses} L</span>
-            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{stats.tradedDays} days</span>
+            <span className="text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 px-1.5 py-0.5 rounded">{stats.wins} W</span>
+            <span className="text-[10px] font-bold bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1.5 py-0.5 rounded">{stats.losses} L</span>
+            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400 px-1.5 py-0.5 rounded">{stats.tradedDays} days</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-xs font-bold text-slate-700 mb-4">Trading Activity <span className="text-gray-300 font-normal">(last 6 months)</span></h3>
+      <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+        <h3 className="text-xs font-bold text-slate-700 dark:text-gray-200 mb-4">Trading Activity <span className="text-gray-300 dark:text-gray-500 font-normal">(last 6 months)</span></h3>
         <div className="overflow-x-auto pb-2">
           <div className="grid grid-rows-7 grid-flow-col gap-1 w-max">
             {activityGrid.map((row, i) => row.map((cell, j) => (
-              <div key={`${i}-${j}`} title={`Activity level ${cell}`} className={`w-3.5 h-3.5 rounded-sm ${cell===0?'bg-gray-100':cell===1?'bg-green-200':cell===2?'bg-green-400':cell===3?'bg-green-600':'bg-green-800'}`}></div>
+              <div key={`${i}-${j}`} title={`Activity level ${cell}`} className={`w-3.5 h-3.5 rounded-sm ${cell===0?'bg-gray-100 dark:bg-gray-800':cell===1?'bg-green-200':cell===2?'bg-green-400':cell===3?'bg-green-600':'bg-green-800'}`}></div>
             )))}
           </div>
         </div>
@@ -1026,36 +1026,36 @@ function ProgressView({ trades }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-xs font-bold text-slate-700 mb-4">Best &amp; Worst Days</h3>
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+          <h3 className="text-xs font-bold text-slate-700 dark:text-gray-200 mb-4">Best &amp; Worst Days</h3>
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-              <div><p className="text-[10px] font-bold text-green-600 uppercase">Best Day</p><p className="text-xs text-gray-600 font-semibold mt-0.5">{formatDate(stats.bestDay)}</p></div>
-              <span className="font-black text-green-600 text-sm">+{formatCurrency(stats.bestPnL)}</span>
+            <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-500/10 rounded-lg">
+              <div><p className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Best Day</p><p className="text-xs text-gray-600 dark:text-gray-300 font-semibold mt-0.5">{formatDate(stats.bestDay)}</p></div>
+              <span className="font-black text-green-600 dark:text-green-400 text-sm">+{formatCurrency(stats.bestPnL)}</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-              <div><p className="text-[10px] font-bold text-red-500 uppercase">Worst Day</p><p className="text-xs text-gray-600 font-semibold mt-0.5">{formatDate(stats.worstDay)}</p></div>
-              <span className="font-black text-red-500 text-sm">{formatCurrency(stats.worstPnL)}</span>
+            <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-500/10 rounded-lg">
+              <div><p className="text-[10px] font-bold text-red-500 dark:text-red-400 uppercase">Worst Day</p><p className="text-xs text-gray-600 dark:text-gray-300 font-semibold mt-0.5">{formatDate(stats.worstDay)}</p></div>
+              <span className="font-black text-red-500 dark:text-red-400 text-sm">{formatCurrency(stats.worstPnL)}</span>
             </div>
           </div>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xs font-bold text-slate-700">Rule Adherence</h3>
+            <h3 className="text-xs font-bold text-slate-700 dark:text-gray-200">Rule Adherence</h3>
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500 font-semibold">Rules Followed</span>
-              <span className="text-xs font-bold text-green-600">{trades.filter(t=>t.rulesFollowed).length} trades</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">Rules Followed</span>
+              <span className="text-xs font-bold text-green-600 dark:text-green-400">{trades.filter(t=>t.rulesFollowed).length} trades</span>
             </div>
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full" style={{width:`${stats.rulesPct*100}%`}}></div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500 font-semibold">Rules Broken</span>
-              <span className="text-xs font-bold text-red-500">{trades.filter(t=>!t.rulesFollowed).length} trades</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold">Rules Broken</span>
+              <span className="text-xs font-bold text-red-500 dark:text-red-400">{trades.filter(t=>!t.rulesFollowed).length} trades</span>
             </div>
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-red-400 to-red-500 rounded-full" style={{width:`${(1-stats.rulesPct)*100}%`}}></div>
             </div>
           </div>
@@ -1104,17 +1104,17 @@ function StrategyView({ trades, strategies, setStrategies }) {
   };
 
   return (
-    <div className="space-y-4 max-w-[1500px] mx-auto">
+    <div className="space-y-4 max-w-[1500px] mx-auto text-slate-800 dark:text-gray-100">
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'Best Performing', val: best ? `${best.name}` : '—', sub: best ? `${best.pnl > 0 ? '+' : ''}${formatCurrency(best.pnl)}` : 'No data', color: best && best.pnl > 0 ? 'text-green-600' : 'text-red-500' },
+          { label: 'Best Performing', val: best ? `${best.name}` : '—', sub: best ? `${best.pnl > 0 ? '+' : ''}${formatCurrency(best.pnl)}` : 'No data', color: best && best.pnl > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500' },
           { label: 'Worst Performing', val: worst && worst !== best ? `${worst.name}` : '—', sub: worst && worst !== best ? `${formatCurrency(worst.pnl)}` : 'No data', color: 'text-red-500' },
-          { label: 'Best Win Rate', val: bestWR ? `${bestWR.name}` : '—', sub: bestWR ? formatPercent(bestWR.winRate) : 'No data', color: 'text-blue-600' },
-          { label: 'Most Active', val: mostActive ? `${mostActive.name}` : '—', sub: mostActive ? `${mostActive.count} trades` : 'No data', color: 'text-orange-500' },
+          { label: 'Best Win Rate', val: bestWR ? `${bestWR.name}` : '—', sub: bestWR ? formatPercent(bestWR.winRate) : 'No data', color: 'text-blue-600 dark:text-blue-400' },
+          { label: 'Most Active', val: mostActive ? `${mostActive.name}` : '—', sub: mostActive ? `${mostActive.count} trades` : 'No data', color: 'text-orange-500 dark:text-orange-400' },
         ].map((s, i) => (
-          <div key={i} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+          <div key={i} className="bg-white dark:bg-[#121212] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">{s.label}</div>
-            <div className="text-sm font-bold text-slate-800 truncate">{s.val}</div>
+            <div className="text-sm font-bold text-slate-800 dark:text-white truncate">{s.val}</div>
             <div className={`text-xs font-bold mt-0.5 ${s.color}`}>{s.sub}</div>
           </div>
         ))}
@@ -1124,25 +1124,25 @@ function StrategyView({ trades, strategies, setStrategies }) {
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{strategyStats.length} strategies from trade tags</p>
         {isAdding ? (
           <div className="flex gap-2">
-            <input type="text" autoFocus value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveNewStrategy()} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="Strategy Name" />
+            <input type="text" autoFocus value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveNewStrategy()} className="border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121212] text-slate-800 dark:text-white rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="Strategy Name" />
             <button onClick={saveNewStrategy} className="px-3 py-1.5 bg-green-600 text-white font-bold rounded-lg text-xs">Save</button>
-            <button onClick={() => setIsAdding(false)} className="px-3 py-1.5 bg-gray-100 text-gray-600 font-bold rounded-lg text-xs">Cancel</button>
+            <button onClick={() => setIsAdding(false)} className="px-3 py-1.5 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 font-bold rounded-lg text-xs">Cancel</button>
           </div>
         ) : (
-          <button onClick={() => setIsAdding(true)} className="px-3 py-1.5 bg-slate-800 text-white font-bold rounded-lg text-xs hover:bg-slate-700">+ Create Strategy</button>
+          <button onClick={() => setIsAdding(true)} className="px-3 py-1.5 bg-slate-800 dark:bg-orange-500 text-white font-bold rounded-lg text-xs hover:bg-slate-700 dark:hover:bg-orange-600">+ Create Strategy</button>
         )}
       </div>
 
       {strategyStats.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-          <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3"><Activity className="w-5 h-5 text-gray-400" /></div>
-          <p className="text-gray-500 font-bold text-sm">No strategy data yet</p>
+        <div className="text-center py-16 bg-white dark:bg-[#121212] rounded-xl border border-gray-100 dark:border-white/5">
+          <div className="w-10 h-10 bg-gray-100 dark:bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3"><Activity className="w-5 h-5 text-gray-400" /></div>
+          <p className="text-gray-500 dark:text-gray-300 font-bold text-sm">No strategy data yet</p>
           <p className="text-gray-400 text-xs mt-1">Add tags to your trades to track strategy performance.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <div className="bg-white dark:bg-[#121212] rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-white/5">
           <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 border-b border-gray-100 text-gray-400 text-[10px] uppercase tracking-wide">
+            <thead className="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 text-gray-400 text-[10px] uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 font-bold">Strategy</th>
                 <th className="px-4 py-3 font-bold text-center">Trades</th>
@@ -1151,20 +1151,20 @@ function StrategyView({ trades, strategies, setStrategies }) {
                 <th className="px-4 py-3 font-bold text-right">Net P&L</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-white/5">
               {strategyStats.map((s, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="px-4 py-2.5 font-bold text-slate-700">{s.name}</td>
-                  <td className="px-4 py-2.5 text-center text-gray-500 font-semibold">{s.count}</td>
+                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                  <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-gray-200">{s.name}</td>
+                  <td className="px-4 py-2.5 text-center text-gray-500 dark:text-gray-400 font-semibold">{s.count}</td>
                   <td className="px-4 py-2.5 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <span className="font-bold">{formatPercent(s.winRate)}</span>
-                      <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <span className="font-bold dark:text-white">{formatPercent(s.winRate)}</span>
+                      <div className="w-12 h-1.5 bg-gray-100 dark:bg-gray-850 rounded-full overflow-hidden">
                         <div className={`h-full ${s.winRate >= 0.5 ? 'bg-green-500' : 'bg-red-400'}`} style={{width:`${s.winRate*100}%`}}></div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-center font-semibold text-gray-600">{s.profitFactor === 99 ? '∞' : s.profitFactor.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 text-center font-semibold text-gray-600 dark:text-gray-400">{s.profitFactor === 99 ? '∞' : s.profitFactor.toFixed(2)}</td>
                   <td className={`px-4 py-2.5 text-right font-bold ${s.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>{s.pnl > 0 ? '+' : ''}{formatCurrency(s.pnl)}</td>
                 </tr>
               ))}
@@ -1199,26 +1199,26 @@ function JournalView({ folders, setFolders, notes, setNotes }) {
   };
 
   return (
-    <div className="h-[calc(100vh-140px)] flex bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-[1500px] mx-auto">
-      <div className="w-[250px] border-r border-gray-100 p-4 flex flex-col gap-2 bg-gray-50/50">
+    <div className="h-[calc(100vh-140px)] flex bg-white dark:bg-[#121212] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden max-w-[1500px] mx-auto text-slate-800 dark:text-gray-100">
+      <div className="w-[250px] border-r border-gray-100 dark:border-white/5 p-4 flex flex-col gap-2 bg-gray-50/50 dark:bg-[#181818]">
          <div className="flex justify-between items-center px-3 py-2 mb-2">
-           <span className="font-bold text-xs text-gray-400 uppercase">Folders</span>
-           <button onClick={() => setIsAddingFolder(true)}><Plus size={14}/></button>
+            <span className="font-bold text-xs text-gray-400 uppercase">Folders</span>
+            <button onClick={() => setIsAddingFolder(true)} className="dark:text-white"><Plus size={14}/></button>
          </div>
          {isAddingFolder && (
-           <input type="text" autoFocus value={newFolderName} onChange={e=>setNewFolderName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveNewFolder()} onBlur={saveNewFolder} className="border border-gray-200 rounded px-3 py-1.5 text-sm font-bold mx-2 mb-2 focus:outline-none" placeholder="New Folder" />
+            <input type="text" autoFocus value={newFolderName} onChange={e=>setNewFolderName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveNewFolder()} onBlur={saveNewFolder} className="border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121212] text-slate-800 dark:text-white rounded px-3 py-1.5 text-sm font-bold mx-2 mb-2 focus:outline-none" placeholder="New Folder" />
          )}
          {folders.map(f => (
-            <button key={f} onClick={()=>setActiveF(f)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm text-left transition-colors ${activeF===f?'bg-green-100 text-green-700':'text-gray-600 hover:bg-gray-100'}`}><Folder size={16}/> {f}</button>
+            <button key={f} onClick={()=>setActiveF(f)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm text-left transition-colors ${activeF===f?'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400':'text-gray-600 dark:text-gray-450 hover:bg-gray-100 dark:hover:bg-white/5'}`}><Folder size={16}/> {f}</button>
          ))}
       </div>
-      <div className="w-[300px] border-r border-gray-100 p-4 flex flex-col">
-         <div className="flex justify-between items-center mb-4 px-2"><span className="font-bold text-lg">{activeF}</span><button onClick={addNote} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"><Plus size={16}/></button></div>
+      <div className="w-[300px] border-r border-gray-100 dark:border-white/5 p-4 flex flex-col">
+         <div className="flex justify-between items-center mb-4 px-2"><span className="font-bold text-lg dark:text-white">{activeF}</span><button onClick={addNote} className="w-8 h-8 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/10 dark:text-white"><Plus size={16}/></button></div>
          <div className="flex-1 overflow-y-auto flex flex-col gap-2">
             {!fNotes.length && <div className="text-gray-400 text-sm p-4 text-center">No notes in this folder.</div>}
             {fNotes.map(n => (
-               <button key={n.id} onClick={()=>setActiveN(n)} className={`p-4 rounded-xl text-left border transition-colors ${activeN?.id===n.id?'border-orange-500 bg-orange-50/50':'border-gray-100 bg-white hover:border-gray-200'}`}>
-                  <div className="font-bold truncate text-gray-800">{n.title}</div>
+               <button key={n.id} onClick={()=>setActiveN(n)} className={`p-4 rounded-xl text-left border transition-colors ${activeN?.id===n.id?'border-orange-500 bg-orange-50/50 dark:bg-orange-500/10':'border-gray-100 dark:border-white/5 bg-white dark:bg-[#181818] hover:border-gray-200 dark:hover:border-white/10'}`}>
+                  <div className="font-bold truncate text-gray-800 dark:text-white">{n.title}</div>
                   <div className="text-xs text-gray-400 truncate mt-1">{n.content || 'Empty note...'}</div>
                </button>
             ))}
@@ -1227,8 +1227,8 @@ function JournalView({ folders, setFolders, notes, setNotes }) {
       <div className="flex-1 p-8 flex flex-col">
          {!activeN ? <div className="flex-1 flex items-center justify-center text-gray-400 font-bold">Select a note to view</div> :
          <div className="flex-1 flex flex-col gap-4">
-            <input type="text" value={activeN.title} onChange={e=>updateNote('title', e.target.value)} className="text-3xl font-bold outline-none placeholder-gray-300" placeholder="Note Title" />
-            <textarea value={activeN.content} onChange={e=>updateNote('content', e.target.value)} className="flex-1 resize-none outline-none text-gray-600 text-lg leading-relaxed placeholder-gray-300" placeholder="Start typing..."></textarea>
+            <input type="text" value={activeN.title} onChange={e=>updateNote('title', e.target.value)} className="bg-transparent text-3xl font-bold outline-none placeholder-gray-300 dark:placeholder-gray-700 dark:text-white" placeholder="Note Title" />
+            <textarea value={activeN.content} onChange={e=>updateNote('content', e.target.value)} className="bg-transparent flex-1 resize-none outline-none text-gray-600 dark:text-gray-300 text-lg leading-relaxed placeholder-gray-300 dark:placeholder-gray-700" placeholder="Start typing..."></textarea>
          </div>}
       </div>
     </div>
@@ -1277,28 +1277,28 @@ function ZenModeView() {
   ];
 
   return (
-    <div className="h-full max-w-[1180px] mx-auto">
+    <div className="h-full max-w-[1180px] mx-auto text-slate-800 dark:text-gray-100">
       <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-5 min-h-[720px]">
-        <section className="bg-white border border-gray-100 rounded-xl shadow-sm p-8 flex flex-col justify-between">
+        <section className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-xl shadow-sm p-8 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 text-orange-500 font-bold text-[11px] uppercase tracking-[0.22em] mb-3">
               <Wind className="w-4 h-4" /> Reset Room
             </div>
-            <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-3">Trade from neutral.</h2>
-            <p className="text-sm text-gray-500 max-w-xl leading-6">
+            <h2 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">Trade from neutral.</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl leading-6">
               A short breathing session for pre-market preparation, revenge-trade interruption, or a clean reset after closing a position.
             </p>
           </div>
 
           <div className="py-12 flex flex-col items-center">
-            <div className="relative w-72 h-72 rounded-full bg-[#f8fafc] border border-gray-100 flex items-center justify-center">
+            <div className="relative w-72 h-72 rounded-full bg-[#f8fafc] dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center justify-center">
               <div
-                className="absolute inset-5 rounded-full border-[10px] border-orange-100"
+                className="absolute inset-5 rounded-full border-[10px] border-orange-100 dark:border-orange-500/10"
                 style={{ background: `conic-gradient(#f97316 ${progress * 360}deg, transparent 0deg)` }}
               />
-              <div className="absolute inset-9 rounded-full bg-white shadow-inner border border-gray-100" />
+              <div className="absolute inset-9 rounded-full bg-white dark:bg-[#121212] shadow-inner border border-gray-100 dark:border-white/5" />
               <div className="relative text-center">
-                <div className="text-[64px] font-bold tabular-nums tracking-tight text-slate-900">{timeLabel}</div>
+                <div className="text-[64px] font-bold tabular-nums tracking-tight text-slate-900 dark:text-white">{timeLabel}</div>
                 <div className="text-xs uppercase tracking-[0.25em] text-gray-400 font-bold">quiet timer</div>
               </div>
             </div>
@@ -1308,7 +1308,7 @@ function ZenModeView() {
                 <button
                   key={d}
                   onClick={() => setMinutes(d)}
-                  className={`h-9 px-4 rounded-lg text-xs font-bold border transition-colors ${minutes === d ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-500 border-gray-200 hover:border-orange-300 hover:text-orange-600'}`}
+                  className={`h-9 px-4 rounded-lg text-xs font-bold border transition-colors ${minutes === d ? 'bg-slate-900 dark:bg-orange-500 text-white border-slate-900 dark:border-orange-500' : 'bg-white dark:bg-[#1a1a1a] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:border-orange-300 hover:text-orange-600'}`}
                 >
                   {d}m
                 </button>
@@ -1326,7 +1326,7 @@ function ZenModeView() {
             </button>
             <button
               onClick={resetSession}
-              className="h-11 px-4 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-bold text-sm flex items-center gap-2 transition-colors"
+              className="h-11 px-4 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a1a1a] hover:bg-gray-50 dark:hover:bg-white/5 text-gray-650 dark:text-gray-300 font-bold text-sm flex items-center gap-2 transition-colors"
             >
               <RotateCcw className="w-4 h-4" /> Reset
             </button>
@@ -1334,25 +1334,25 @@ function ZenModeView() {
         </section>
 
         <aside className="flex flex-col gap-5">
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">Session Cues</h3>
+          <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-xl shadow-sm p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Session Cues</h3>
             <div className="space-y-3">
               {phases.map((phase, idx) => (
-                <div key={phase} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                <div key={phase} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-[#181818] border border-gray-100 dark:border-white/5">
                   <CheckCircle2 className={`w-4 h-4 ${progress > idx / phases.length ? 'text-orange-500' : 'text-gray-300'}`} />
-                  <span className="text-sm font-semibold text-gray-600">{phase}</span>
+                  <span className="text-sm font-semibold text-gray-600 dark:text-gray-350">{phase}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 flex-1">
-            <h3 className="text-sm font-bold text-slate-900 mb-2">Post-Session Note</h3>
+          <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-xl shadow-sm p-6 flex-1">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">Post-Session Note</h3>
             <p className="text-xs text-gray-400 mb-4">Capture the one decision you want your next trade to respect.</p>
             <textarea
               value={reflection}
               onChange={e => setReflection(e.target.value)}
-              className="w-full min-h-[220px] resize-none rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300"
+              className="w-full min-h-[220px] resize-none rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 text-sm text-gray-750 dark:text-gray-200 outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 placeholder-gray-400 dark:placeholder-gray-600"
               placeholder="Example: Wait for confirmation before entering. No trade is also a position."
             />
           </div>
@@ -1367,59 +1367,59 @@ function StartDayModal({ onClose, trades }) {
   useModalA11y(true, onClose);
   const todayPnL = useMemo(() => trades.filter(t=>t.exitDate.startsWith(new Date().toISOString().split('T')[0])).reduce((s,t)=>s+t.pnl,0), [trades]);
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="start-day-title" className="fixed inset-0 z-50 bg-[#f7f7f8] flex flex-col">
-      <header className="h-20 px-8 flex justify-between items-center bg-white border-b border-gray-100 shrink-0">
-        <h1 id="start-day-title" className="text-2xl font-bold">Start Your Day</h1>
+    <div role="dialog" aria-modal="true" aria-labelledby="start-day-title" className="fixed inset-0 z-50 bg-[#f7f7f8] dark:bg-[#0a0a0a] flex flex-col text-slate-800 dark:text-gray-100">
+      <header className="h-20 px-8 flex justify-between items-center bg-white dark:bg-[#121212] border-b border-gray-100 dark:border-white/5 shrink-0">
+        <h1 id="start-day-title" className="text-2xl font-bold dark:text-white">Start Your Day</h1>
         <div className="flex gap-4">
-          <button onClick={onClose} className="px-6 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors shadow-sm">Complete Prep</button>
+          <button onClick={onClose} className="px-6 py-2.5 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm bg-transparent">Complete Prep</button>
           <button onClick={onClose} className="px-6 py-2.5 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold transition-colors shadow-sm shadow-[#16a34a]/20">Finish Day</button>
         </div>
       </header>
       <div className="flex-1 overflow-hidden flex p-8 gap-8 max-w-[1600px] mx-auto w-full">
         <div className="flex-1 flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold">Notes</h2>
-            <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${todayPnL>=0?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}`}>Net P&L {todayPnL>0?'+':''}{formatCurrency(todayPnL)}</span>
-            <button className="text-blue-500 font-bold text-sm ml-auto hover:underline">+ Add template</button>
+            <h2 className="text-xl font-bold dark:text-white">Notes</h2>
+            <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${todayPnL>=0?'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400':'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'}`}>Net P&L {todayPnL>0?'+':''}{formatCurrency(todayPnL)}</span>
+            <button className="text-blue-500 font-bold text-sm ml-auto hover:underline bg-transparent">+ Add template</button>
           </div>
-          <div className="bg-white border border-gray-200 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm">
-            <div className="p-2 border-b border-gray-100 flex gap-1 text-gray-500 bg-gray-50/50">
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors"><Bold size={16}/></button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors"><Italic size={16}/></button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors"><Underline size={16}/></button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors"><Strikethrough size={16}/></button>
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm">
+            <div className="p-2 border-b border-gray-100 dark:border-white/5 flex gap-1 text-gray-500 bg-gray-50/50 dark:bg-[#181818]">
+              <button className="p-2 hover:bg-gray-200 dark:hover:bg-white/5 rounded-lg transition-colors"><Bold size={16}/></button>
+              <button className="p-2 hover:bg-gray-200 dark:hover:bg-white/5 rounded-lg transition-colors"><Italic size={16}/></button>
+              <button className="p-2 hover:bg-gray-200 dark:hover:bg-white/5 rounded-lg transition-colors"><Underline size={16}/></button>
+              <button className="p-2 hover:bg-gray-200 dark:hover:bg-white/5 rounded-lg transition-colors"><Strikethrough size={16}/></button>
             </div>
-            <textarea className="flex-1 w-full p-6 resize-none focus:outline-none text-gray-700 text-lg leading-relaxed placeholder-gray-400" placeholder="Write something, or press '/' for commands"></textarea>
+            <textarea className="flex-1 w-full p-6 resize-none focus:outline-none bg-transparent text-gray-700 dark:text-gray-200 text-lg leading-relaxed placeholder-gray-400 dark:placeholder-gray-600" placeholder="Write something, or press '/' for commands"></textarea>
           </div>
         </div>
         <div className="w-[450px] flex flex-col gap-6 overflow-y-auto pb-8 pr-2">
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-lg">{formatDate(new Date())} Checklist</h3>
-              <button className="text-orange-500 text-sm font-bold bg-orange-50 px-3 py-1.5 rounded-lg">Progress Tracker</button>
+              <h3 className="font-bold text-lg dark:text-white">{formatDate(new Date())} Checklist</h3>
+              <button className="text-orange-500 text-sm font-bold bg-orange-50 dark:bg-orange-500/10 px-3 py-1.5 rounded-lg">Progress Tracker</button>
             </div>
             <div className="mb-6">
               <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Manual Rules</h4>
-              <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-xl border border-gray-100 font-medium">No rules yet. Add rules to get started.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/5 font-medium">No rules yet. Add rules to get started.</p>
             </div>
             <div className="mb-8">
               <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Automatic Rules</h4>
-              <div className="flex justify-between items-center text-sm bg-gray-50 p-4 rounded-xl border border-gray-100"><span className="font-bold text-gray-700">Max Loss on Day</span><span className="font-bold text-red-500 bg-red-100 px-2 py-1 rounded-md">-$500</span></div>
+              <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/5"><span className="font-bold text-gray-700 dark:text-gray-200">Max Loss on Day</span><span className="font-bold text-red-500 bg-red-100 dark:bg-red-500/10 px-2 py-1 rounded-md">-$500</span></div>
             </div>
             <div>
-              <div className="flex justify-between text-sm font-bold mb-3 text-gray-700"><span>Progress</span><span>0 / 1</span></div>
-              <div className="h-3 bg-gray-100 rounded-full overflow-hidden"><div className="w-0 h-full bg-green-500 rounded-full"></div></div>
+              <div className="flex justify-between text-sm font-bold mb-3 text-gray-700 dark:text-gray-200"><span>Progress</span><span>0 / 1</span></div>
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div className="w-0 h-full bg-green-500 rounded-full"></div></div>
             </div>
           </div>
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-lg mb-6">News Calendar</h3>
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold text-lg dark:text-white mb-6">News Calendar</h3>
             <div className="flex flex-col gap-5">
               {[{t:'08:30',e:'Core CPI m/m',c:'🇺🇸',a:'0.3%',f:'0.3%',p:'0.4%'},{t:'08:30',e:'CPI m/m',c:'🇺🇸',a:'0.4%',f:'0.3%',p:'0.3%'},{t:'10:00',e:'Fed Chair Powell Speaks',c:'🇺🇸',a:'-',f:'-',p:'-'},{t:'10:30',e:'Crude Oil Inventories',c:'🇺🇸',a:'1.4M',f:'0.9M',p:'-1.4M'}].map((ev,i) => (
-                 <div key={i} className="flex gap-4 text-sm items-start border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                 <div key={i} className="flex gap-4 text-sm items-start border-b border-gray-50 dark:border-white/5 pb-4 last:border-0 last:pb-0">
                     <span className="text-gray-400 font-bold w-10 mt-0.5">{ev.t}</span>
                     <span className="text-xl leading-none mt-0.5">{ev.c}</span>
                     <div className="flex flex-col flex-1 gap-1">
-                       <span className="font-bold text-gray-800">{ev.e}</span>
+                       <span className="font-bold text-gray-800 dark:text-gray-255">{ev.e}</span>
                        <span className="text-[11px] font-bold text-gray-400">Act: {ev.a} | F'cast: {ev.f} | Prev: {ev.p}</span>
                     </div>
                  </div>
@@ -1435,19 +1435,19 @@ function StartDayModal({ onClose, trades }) {
 function AccountModal({ onClose, onSelect }) {
   useModalA11y(true, onClose);
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="account-modal-title" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100 bg-gray-50/50">
-          <h2 id="account-modal-title" className="text-xl font-bold text-[#111827]">My Trading Accounts</h2>
+    <div role="dialog" aria-modal="true" aria-labelledby="account-modal-title" className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4 text-slate-800 dark:text-gray-100">
+      <div className="bg-white dark:bg-[#121212] rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden border dark:border-white/5">
+        <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-[#181818]">
+          <h2 id="account-modal-title" className="text-xl font-bold text-[#111827] dark:text-white">My Trading Accounts</h2>
           <div className="flex items-center gap-4">
-            <button className="px-4 py-2 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 shadow-sm transition-colors">Sync</button>
-            <button className="px-4 py-2 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold text-sm shadow-sm shadow-[#16a34a]/20 transition-colors">+ Add New Account</button>
-            <button aria-label="Close" onClick={onClose} className="text-gray-400 hover:text-gray-800 ml-2 p-1"><X size={20}/></button>
+            <button className="px-4 py-2 border border-gray-200 dark:border-white/10 rounded-xl font-bold text-gray-600 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-white/5 shadow-sm transition-colors bg-transparent">Sync</button>
+            <button className="px-4 py-2 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold text-sm shadow-sm shadow-[#16a34a]/20 transition-colors">Add New Account</button>
+            <button aria-label="Close" onClick={onClose} className="text-gray-400 hover:text-gray-800 dark:hover:text-white ml-2 p-1"><X size={20}/></button>
           </div>
         </div>
         <div className="p-8">
           <table className="w-full text-left text-sm">
-            <thead className="text-gray-400 uppercase text-xs border-b border-gray-100 tracking-wider">
+            <thead className="text-gray-400 uppercase text-xs border-b border-gray-100 dark:border-white/5 tracking-wider">
               <tr>
                 <th className="pb-4 font-bold">Account Name</th>
                 <th className="pb-4 font-bold">Broker</th>
@@ -1457,13 +1457,13 @@ function AccountModal({ onClose, onSelect }) {
                 <th className="pb-4 text-right font-bold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="py-5 font-bold text-gray-900">Default Account</td>
-                <td className="py-5 text-gray-500 font-medium">manual</td>
-                <td className="py-5 font-bold text-gray-900">$0.00</td>
-                <td className="py-5 text-gray-500 font-medium">Never</td>
-                <td className="py-5"><span className="bg-gray-100 px-3 py-1 rounded-md text-gray-600 text-xs font-bold">Inactive</span></td>
+            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+              <tr className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                <td className="py-5 font-bold text-gray-900 dark:text-white">Default Account</td>
+                <td className="py-5 text-gray-500 dark:text-gray-400 font-medium">manual</td>
+                <td className="py-5 font-bold text-gray-900 dark:text-white">$0.00</td>
+                <td className="py-5 text-gray-500 dark:text-gray-400 font-medium">Never</td>
+                <td className="py-5"><span className="bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 text-xs font-bold">Inactive</span></td>
                 <td className="py-5 text-right">
                   <button onClick={() => onSelect('Default Account')} className="w-8 h-8 bg-[#16a34a]/10 text-[#16a34a] rounded-full flex items-center justify-center hover:bg-[#16a34a]/20 transition-colors ml-auto">
                     <Plus size={16} strokeWidth={3} />
@@ -1478,7 +1478,7 @@ function AccountModal({ onClose, onSelect }) {
   )
 }
 
-function TradeModal({ trade, onClose, onSave, onDelete }) {
+function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView }) {
   useModalA11y(true, onClose);
   const isEdit = !!trade;
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -1575,11 +1575,11 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
 
   const TYPES = ['Stock', 'Futures', 'Forex', 'Options', 'Crypto'];
   const RATINGS = [
-    { label: 'F', color: 'text-red-600 border-red-300 bg-red-50' },
-    { label: 'D', color: 'text-orange-600 border-orange-300 bg-orange-50' },
-    { label: 'C', color: 'text-yellow-600 border-yellow-300 bg-yellow-50' },
-    { label: 'B-', color: 'text-blue-600 border-blue-300 bg-blue-50' },
-    { label: 'A', color: 'text-green-600 border-green-300 bg-green-50' },
+    { label: 'F', color: 'text-red-600 border-red-300 bg-red-50 dark:text-red-400 dark:border-red-500/30 dark:bg-red-500/10' },
+    { label: 'D', color: 'text-orange-600 border-orange-300 bg-orange-50 dark:text-orange-400 dark:border-orange-500/30 dark:bg-orange-500/10' },
+    { label: 'C', color: 'text-yellow-600 border-yellow-300 bg-yellow-50 dark:text-yellow-400 dark:border-yellow-500/30 dark:bg-yellow-500/10' },
+    { label: 'B-', color: 'text-blue-600 border-blue-300 bg-blue-50 dark:text-blue-400 dark:border-blue-500/30 dark:bg-blue-500/10' },
+    { label: 'A', color: 'text-green-600 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-500/30 dark:bg-green-500/10' },
   ];
 
   const ALL_SYMBOLS = [
@@ -1599,34 +1599,35 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
     { s: 'JPM', n: 'JPMorgan Chase', cat: 'Stock' },
     { s: 'GS', n: 'Goldman Sachs', cat: 'Stock' },
     // Futures
-    { s: 'NQ', n: 'NASDAQ-100 Futures', cat: 'Futures' },
-    { s: 'ES', n: 'S&P 500 Futures', cat: 'Futures' },
-    { s: 'MES', n: 'Micro E-Mini S&P 500', cat: 'Futures' },
-    { s: 'MNQ', n: 'Micro E-Mini NASDAQ', cat: 'Futures' },
-    { s: 'RTY', n: 'Russell 2000 Futures', cat: 'Futures' },
-    { s: 'YM', n: 'Dow Jones Futures', cat: 'Futures' },
-    { s: 'CL', n: 'Crude Oil Futures', cat: 'Futures' },
-    { s: 'GC', n: 'Gold Futures', cat: 'Futures' },
-    { s: 'SI', n: 'Silver Futures', cat: 'Futures' },
+    { s: 'ES', n: 'E-mini S&P 500', cat: 'Futures' },
+    { s: 'NQ', n: 'E-mini NASDAQ 100', cat: 'Futures' },
+    { s: 'YM', n: 'Mini-DOW', cat: 'Futures' },
+    { s: 'RTY', n: 'E-mini Russell 2000', cat: 'Futures' },
+    { s: 'CL', n: 'Crude Oil', cat: 'Futures' },
+    { s: 'GC', n: 'Gold', cat: 'Futures' },
     // Forex
     { s: 'EURUSD', n: 'Euro / US Dollar', cat: 'Forex' },
-    { s: 'GBPUSD', n: 'British Pound / USD', cat: 'Forex' },
-    { s: 'USDJPY', n: 'USD / Japanese Yen', cat: 'Forex' },
-    { s: 'AUDUSD', n: 'Australian Dollar / USD', cat: 'Forex' },
+    { s: 'GBPUSD', n: 'British Pound / US Dollar', cat: 'Forex' },
+    { s: 'USDJPY', n: 'US Dollar / Japanese Yen', cat: 'Forex' },
+    { s: 'AUDUSD', n: 'Australian Dollar / US Dollar', cat: 'Forex' },
+    { s: 'USDCAD', n: 'US Dollar / Canadian Dollar', cat: 'Forex' },
     // Crypto
-    { s: 'BTCUSD', n: 'Bitcoin / USD', cat: 'Crypto' },
-    { s: 'ETHUSD', n: 'Ethereum / USD', cat: 'Crypto' },
-    { s: 'SOLUSD', n: 'Solana / USD', cat: 'Crypto' },
+    { s: 'BTC', n: 'Bitcoin', cat: 'Crypto' },
+    { s: 'ETH', n: 'Ethereum', cat: 'Crypto' },
+    { s: 'SOL', n: 'Solana', cat: 'Crypto' },
   ];
+
+  const symbolQuery = formData.symbol.trim();
+  const filteredSymbols = useMemo(() => {
+    if (!symbolQuery) return ALL_SYMBOLS.filter(sym => sym.cat === tradeType).slice(0, 5);
+    return ALL_SYMBOLS.filter(sym => 
+      sym.s.toLowerCase().includes(symbolQuery.toLowerCase()) || 
+      sym.n.toLowerCase().includes(symbolQuery.toLowerCase())
+    ).slice(0, 5);
+  }, [symbolQuery, tradeType]);
 
   const [symbolOpen, setSymbolOpen] = useState(false);
   const symbolRef = useRef(null);
-
-  const symbolQuery = formData.symbol.toUpperCase();
-  const filteredSymbols = useMemo(() => {
-    if (!symbolQuery) return ALL_SYMBOLS.filter(s => tradeType === 'All' || s.cat === tradeType).slice(0, 8);
-    return ALL_SYMBOLS.filter(s => s.s.startsWith(symbolQuery) || s.n.toUpperCase().includes(symbolQuery)).slice(0, 8);
-  }, [symbolQuery, tradeType]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -1635,24 +1636,24 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const inputCls = "w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 focus:ring-1 focus:ring-orange-400 focus:outline-none focus:bg-white transition-colors";
+  const inputCls = "w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 dark:text-gray-205 focus:ring-1 focus:ring-orange-400 focus:outline-none focus:bg-white dark:focus:bg-[#1a1a1a] transition-colors";
   const labelCls = "block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1";
 
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="trade-modal-title" className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4 md:p-6 lg:p-8">
-      <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] md:max-h-full">
+      <div className="bg-white dark:bg-[#121212] rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] md:max-h-full border dark:border-white/5">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-white dark:bg-[#121212] shrink-0">
           <div className="flex items-center gap-4">
-            <h2 id="trade-modal-title" className="text-base font-bold text-slate-800">{isEdit ? 'Edit Trade' : 'Log Trade'}</h2>
+            <h2 id="trade-modal-title" className="text-base font-bold text-slate-800 dark:text-white">{isEdit ? 'Edit Trade' : 'Log Trade'}</h2>
             <div className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold">
               <CalendarDays className="w-3.5 h-3.5" />
               <span>{new Date(formData.exitDate || new Date()).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}</span>
             </div>
             {errorMsg && <div className="ml-4 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-bold animate-pulse">{errorMsg}</div>}
           </div>
-          <button aria-label="Close" onClick={onClose} className="text-gray-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"><X className="w-4 h-4" /></button>
+          <button aria-label="Close" onClick={onClose} className="text-gray-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"><X className="w-4 h-4" /></button>
         </div>
 
         {/* Body */}
@@ -1661,15 +1662,15 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
           <>
 
           {/* LEFT PANEL */}
-          <form id="trade-form" onSubmit={handleSubmit} className="w-full md:w-[52%] border-b md:border-b-0 md:border-r border-gray-100 flex flex-col overflow-y-auto">
+          <form id="trade-form" onSubmit={handleSubmit} className="w-full md:w-[52%] border-b md:border-b-0 md:border-r border-gray-100 dark:border-white/5 flex flex-col overflow-y-auto">
 
             {/* Type selector */}
-            <div className="px-5 pt-4 pb-3 border-b border-gray-50">
+            <div className="px-5 pt-4 pb-3 border-b border-gray-50 dark:border-white/5">
               <p className={labelCls}>Type</p>
               <div className="flex gap-1.5">
                 {TYPES.map(t => (
                   <button key={t} type="button" onClick={() => setTradeType(t)}
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all ${tradeType === t ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all ${tradeType === t ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10'}`}
                   >{t}</button>
                 ))}
               </div>
@@ -1677,7 +1678,7 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
 
             {/* Trade Data */}
             <div className="px-5 py-4 space-y-3">
-              <p className="text-xs font-bold text-slate-700 flex items-center gap-2">Trade Data <span className="text-gray-300 text-[10px] font-medium">Fill in your trade details</span></p>
+              <p className="text-xs font-bold text-slate-700 dark:text-gray-200 flex items-center gap-2">Trade Data <span className="text-gray-300 dark:text-gray-500 text-[10px] font-medium">Fill in your trade details</span></p>
 
               {/* Symbol & Net P&L */}
               <div className="grid grid-cols-2 gap-3">
@@ -1699,8 +1700,8 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
                   </div>
                   {/* Dropdown */}
                   {symbolOpen && filteredSymbols.length > 0 && (
-                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-                      <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden">
+                      <div className="px-3 py-1.5 bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5">
                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
                           {symbolQuery ? `Results for "${symbolQuery}"` : `Popular ${tradeType} Symbols`}
                         </span>
@@ -1711,12 +1712,12 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
                             key={sym.s}
                             type="button"
                             onMouseDown={(e) => { e.preventDefault(); setFormData(p => ({...p, symbol: sym.s})); setSymbolOpen(false); }}
-                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-orange-50 transition-colors text-left group"
+                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-orange-50 dark:hover:bg-white/5 transition-colors text-left group"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="w-8 h-5 bg-slate-100 group-hover:bg-orange-100 rounded text-[9px] font-black text-slate-600 group-hover:text-orange-600 flex items-center justify-center transition-colors">{sym.cat.slice(0,3).toUpperCase()}</span>
+                              <span className="w-8 h-5 bg-slate-100 dark:bg-white/5 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/20 rounded text-[9px] font-black text-slate-600 dark:text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 flex items-center justify-center transition-colors">{sym.cat.slice(0,3).toUpperCase()}</span>
                               <div>
-                                <p className="text-xs font-black text-slate-800">{sym.s}</p>
+                                <p className="text-xs font-black text-slate-800 dark:text-white">{sym.s}</p>
                                 <p className="text-[9px] text-gray-400 font-medium">{sym.n}</p>
                               </div>
                             </div>
@@ -1739,7 +1740,7 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
                 <div className="flex gap-1.5">
                   {['Long', 'Short'].map(s => (
                     <button key={s} type="button" onClick={() => setFormData(p => ({...p, side: s}))}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${formData.side === s ? (s === 'Long' ? 'bg-green-500 text-white border-green-500' : 'bg-red-500 text-white border-red-500') : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${formData.side === s ? (s === 'Long' ? 'bg-green-500 text-white border-green-500' : 'bg-red-500 text-white border-red-500') : 'bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10'}`}
                     >{s}</button>
                   ))}
                 </div>
@@ -1827,26 +1828,26 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
               {/* Mistakes tags */}
               <div>
                 <label className={labelCls}>Mistakes</label>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 flex flex-wrap gap-1.5 min-h-[36px] focus-within:ring-1 focus-within:ring-orange-400 focus-within:bg-white transition-colors">
+                <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 flex flex-wrap gap-1.5 min-h-[36px] focus-within:ring-1 focus-within:ring-orange-400 focus-within:bg-white dark:focus-within:bg-[#1a1a1a] transition-colors">
                   {mistakeTags.map(tag => (
-                    <span key={tag} className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span key={tag} className="bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       {tag} <button type="button" onClick={() => setMistakeTags(mistakeTags.filter(t => t !== tag))} className="hover:text-red-900">×</button>
                     </span>
                   ))}
-                  <input value={mistakeInput} onChange={e => setMistakeInput(e.target.value)} onKeyDown={addMistakeTag} className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none flex-1 min-w-[100px] placeholder-gray-400" placeholder="Add mistake tags..." />
+                  <input value={mistakeInput} onChange={e => setMistakeInput(e.target.value)} onKeyDown={addMistakeTag} className="bg-transparent text-xs font-semibold text-slate-700 dark:text-gray-200 focus:outline-none flex-1 min-w-[100px] placeholder-gray-400" placeholder="Add mistake tags..." />
                 </div>
               </div>
 
               {/* Custom tags */}
               <div>
                 <label className={labelCls}>Custom Tags</label>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 flex flex-wrap gap-1.5 min-h-[36px] focus-within:ring-1 focus-within:ring-orange-400 focus-within:bg-white transition-colors">
+                <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 flex flex-wrap gap-1.5 min-h-[36px] focus-within:ring-1 focus-within:ring-orange-400 focus-within:bg-white dark:focus-within:bg-[#1a1a1a] transition-colors">
                   {customTags.map(tag => (
-                    <span key={tag} className="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span key={tag} className="bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       {tag} <button type="button" onClick={() => setCustomTags(customTags.filter(t => t !== tag))} className="hover:text-orange-900">×</button>
                     </span>
                   ))}
-                  <input value={customTagInput} onChange={e => setCustomTagInput(e.target.value)} onKeyDown={addCustomTag} className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none flex-1 min-w-[100px] placeholder-gray-400" placeholder="Add custom tags..." />
+                  <input value={customTagInput} onChange={e => setCustomTagInput(e.target.value)} onKeyDown={addCustomTag} className="bg-transparent text-xs font-semibold text-slate-700 dark:text-gray-200 focus:outline-none flex-1 min-w-[100px] placeholder-gray-400" placeholder="Add custom tags..." />
                 </div>
               </div>
 
@@ -1859,33 +1860,33 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
           </form>
 
           {/* RIGHT PANEL */}
-          <div className="flex-1 flex flex-col overflow-y-auto bg-gray-50/40">
+          <div className="flex-1 flex flex-col overflow-y-auto bg-gray-50/40 dark:bg-transparent">
 
             {/* Strategies */}
-            <div className="mx-4 mt-4 bg-white rounded-xl border border-gray-100 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-50">
-                <p className="text-xs font-bold text-slate-700">Strategies</p>
+            <div className="mx-4 mt-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50 dark:border-white/5">
+                <p className="text-xs font-bold text-slate-700 dark:text-gray-200">Strategies</p>
               </div>
               <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gray-100 dark:bg-white/5 rounded-xl flex items-center justify-center">
                   <Activity className="w-5 h-5 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-500">No strategies found</p>
+                  <p className="text-xs font-bold text-gray-500 dark:text-gray-400">No strategies found</p>
                   <p className="text-[10px] text-gray-400 mt-0.5">Attach a strategy to track performance</p>
                 </div>
-                <button type="button" className="mt-1 px-4 py-2 bg-slate-800 text-white text-[10px] font-bold rounded-lg hover:bg-slate-700 transition-colors">Create Your First Strategy</button>
+                <button type="button" onClick={() => { onClose(); setCurrentView('strategy'); }} className="mt-1 px-4 py-2 bg-slate-800 dark:bg-orange-500 text-white text-[10px] font-bold rounded-lg hover:bg-slate-700 dark:hover:bg-orange-600 transition-colors">Create Your First Strategy</button>
               </div>
             </div>
 
             {/* Attachments */}
-            <div className="mx-4 mt-3 bg-white rounded-xl border border-gray-100 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-50">
-                <p className="text-xs font-bold text-slate-700">Attachments</p>
+            <div className="mx-4 mt-3 bg-white dark:bg-[#121212] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50 dark:border-white/5">
+                <p className="text-xs font-bold text-slate-700 dark:text-gray-200">Attachments</p>
               </div>
               <div className="p-4">
-                <label className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 transition-all group">
-                  <div className="w-9 h-9 bg-green-50 group-hover:bg-green-100 rounded-lg flex items-center justify-center transition-colors">
+                <label className="border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 dark:hover:bg-orange-500/5 transition-all group">
+                  <div className="w-9 h-9 bg-green-50 dark:bg-green-500/10 group-hover:bg-green-100 rounded-lg flex items-center justify-center transition-colors">
                     <Download className="w-4 h-4 text-green-500 rotate-180" />
                   </div>
                   <p className="text-[10px] font-semibold text-gray-400">Add your media</p>
@@ -1896,15 +1897,15 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
             </div>
 
             {/* Trade Rating */}
-            <div className="mx-4 mt-3 mb-4 bg-white rounded-xl border border-gray-100 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-50">
-                <p className="text-xs font-bold text-slate-700">Trade Rating</p>
+            <div className="mx-4 mt-3 mb-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50 dark:border-white/5">
+                <p className="text-xs font-bold text-slate-700 dark:text-gray-200">Trade Rating</p>
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between gap-2">
                   {RATINGS.map(r => (
                     <button key={r.label} type="button" onClick={() => setTradeRating(tradeRating === r.label ? '' : r.label)}
-                      className={`flex-1 py-2.5 text-xs font-black rounded-xl border-2 transition-all ${tradeRating === r.label ? r.color + ' shadow-sm scale-105' : 'border-gray-100 text-gray-400 bg-gray-50 hover:border-gray-200'}`}
+                      className={`flex-1 py-2.5 text-xs font-black rounded-xl border-2 transition-all ${tradeRating === r.label ? r.color + ' shadow-sm scale-105' : 'border-gray-100 dark:border-white/5 text-gray-400 bg-gray-50 dark:bg-white/5 hover:border-gray-200 dark:hover:border-white/10'}`}
                     >{r.label}</button>
                   ))}
                 </div>
@@ -1913,8 +1914,8 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
           </div>
           </>
           ) : (
-          <div className="flex flex-1 bg-gray-50/40 overflow-hidden">
-            <div className="w-[190px] border-r border-gray-100 bg-white p-4 flex flex-col gap-2">
+          <div className="flex flex-1 bg-gray-50/40 dark:bg-transparent overflow-hidden">
+            <div className="w-[190px] border-r border-gray-100 dark:border-white/5 bg-white dark:bg-[#121212] p-4 flex flex-col gap-2">
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide px-2 mb-2">Skip questions</div>
               {journalPrompts.map((prompt, idx) => {
                 const answered = String(journalAnswers[prompt.key] || '').trim();
@@ -1923,7 +1924,7 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
                     key={prompt.key}
                     type="button"
                     onClick={() => setActivePrompt(idx)}
-                    className={`text-left rounded-lg px-3 py-2 border transition-colors ${activePrompt === idx ? 'border-orange-400 bg-orange-50 text-orange-700' : answered ? 'border-green-100 bg-green-50 text-green-700' : 'border-gray-100 bg-white text-gray-500 hover:bg-gray-50'}`}
+                    className={`text-left rounded-lg px-3 py-2 border transition-colors ${activePrompt === idx ? 'border-orange-400 bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400' : answered ? 'border-green-100 dark:border-green-500/10 bg-green-50 text-green-700 dark:text-green-400' : 'border-gray-100 dark:border-white/5 bg-white dark:bg-[#1a1a1a] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
                   >
                     <div className="text-[10px] font-black uppercase tracking-wide">{prompt.label}</div>
                     <div className="text-[10px] font-semibold opacity-70">{answered ? 'Answered' : 'Skip or answer'}</div>
@@ -1933,13 +1934,13 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-8">
-              <div className="w-full max-w-2xl bg-white border border-gray-100 rounded-2xl shadow-sm p-8">
+              <div className="w-full max-w-2xl bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm p-8">
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <p className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.25em]">Journal Step {activePrompt + 1} / {journalPrompts.length}</p>
-                    <h3 className="text-2xl font-bold text-slate-900 mt-2">{journalPrompts[activePrompt].question}</h3>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{journalPrompts[activePrompt].question}</h3>
                   </div>
-                  <button type="button" onClick={skipPrompt} className="px-3 py-2 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 text-xs font-bold">Skip</button>
+                  <button type="button" onClick={skipPrompt} className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 text-xs font-bold">Skip</button>
                 </div>
 
                 <textarea
@@ -1949,13 +1950,13 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
                   onKeyDown={e => {
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') movePrompt(1);
                   }}
-                  className="w-full min-h-[180px] resize-none rounded-xl border border-gray-200 bg-gray-50 p-4 text-base text-gray-700 outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300"
+                  className="w-full min-h-[180px] resize-none rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 text-base text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 placeholder-gray-400 dark:placeholder-gray-600"
                   placeholder={journalPrompts[activePrompt].placeholder}
                 />
 
                 <div className="mt-6 flex items-center justify-between">
-                  <button type="button" onClick={() => movePrompt(-1)} disabled={activePrompt === 0} className="px-4 py-2 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-40 text-xs font-bold">Back</button>
-                  <button type="button" onClick={() => activePrompt === journalPrompts.length - 1 ? persistTrade() : movePrompt(1)} className="px-5 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 text-xs font-bold">
+                  <button type="button" onClick={() => movePrompt(-1)} disabled={activePrompt === 0} className="px-4 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 disabled:opacity-40 text-xs font-bold bg-transparent">Back</button>
+                  <button type="button" onClick={() => activePrompt === journalPrompts.length - 1 ? persistTrade() : movePrompt(1)} className="px-5 py-2 rounded-lg bg-slate-900 dark:bg-orange-500 text-white dark:text-white hover:bg-slate-700 dark:hover:bg-orange-600 text-xs font-bold">
                     {activePrompt === journalPrompts.length - 1 ? 'Finish & Save' : 'Next Question'}
                   </button>
                 </div>
@@ -1966,21 +1967,21 @@ function TradeModal({ trade, onClose, onSave, onDelete }) {
         </div>
 
         {/* Footer */}
-        <div className="bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center shrink-0">
+        <div className="bg-white dark:bg-[#121212] border-t border-gray-100 dark:border-white/5 px-6 py-3 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-3">
             <div>
               <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Preview P&L</p>
               <p className={`text-base font-black ${pnlPreview >= 0 ? 'text-green-600' : 'text-red-500'}`}>{pnlPreview >= 0 ? '+' : ''}{formatCurrency(pnlPreview)}</p>
             </div>
-            {tradeRating && <span className="text-[10px] font-bold text-gray-400">Rating: <span className="text-slate-700">{tradeRating}</span></span>}
+            {tradeRating && <span className="text-[10px] font-bold text-gray-400">Rating: <span className="text-slate-700 dark:text-gray-300">{tradeRating}</span></span>}
           </div>
           <div className="flex gap-2">
             {isEdit && (
               confirmDelete
                 ? <button type="button" onClick={() => onDelete(trade.id)} className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold transition-colors">Yes, Delete</button>
-                : <button type="button" onClick={() => setConfirmDelete(true)} className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors">Delete</button>
+                : <button type="button" onClick={() => setConfirmDelete(true)} className="px-4 py-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-lg text-xs font-bold transition-colors">Delete</button>
             )}
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg text-xs font-bold transition-colors">Cancel</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg text-xs font-bold transition-colors">Cancel</button>
             {modalStep === 'details' ? (
               <button type="submit" form="trade-form" className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold shadow-sm transition-colors">Next</button>
             ) : (
@@ -1998,16 +1999,16 @@ function DayTradesModal({ date, trades, onClose, onEdit }) {
   useModalA11y(true, onClose);
   if (!date) return null;
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="day-trades-title" className="fixed inset-0 z-50 flex items-center justify-center bg-[#111827]/20 backdrop-blur-sm p-4">
-      <div className="bg-[#ffffff] rounded-3xl w-full max-w-lg shadow-[0_20px_40px_rgba(0,0,0,0.1)] overflow-hidden">
-        <div className="flex justify-between p-6 border-b border-[rgba(0,0,0,0.06)]">
-          <h2 id="day-trades-title" className="text-lg font-bold text-[#111827]">Trades on {formatDate(date)}</h2>
-          <button aria-label="Close" onClick={onClose} className="text-[#9ca3af] hover:text-[#111827]"><X className="w-5 h-5" /></button>
+    <div role="dialog" aria-modal="true" aria-labelledby="day-trades-title" className="fixed inset-0 z-50 flex items-center justify-center bg-[#111827]/20 backdrop-blur-sm p-4 text-slate-800 dark:text-gray-100">
+      <div className="bg-[#ffffff] dark:bg-[#121212] rounded-3xl w-full max-w-lg shadow-[0_20px_40px_rgba(0,0,0,0.1)] overflow-hidden border dark:border-white/5">
+        <div className="flex justify-between p-6 border-b border-[rgba(0,0,0,0.06)] dark:border-white/5">
+          <h2 id="day-trades-title" className="text-lg font-bold text-[#111827] dark:text-white">Trades on {formatDate(date)}</h2>
+          <button aria-label="Close" onClick={onClose} className="text-[#9ca3af] hover:text-[#111827] dark:hover:text-white"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-6">
           {trades.map(t => (
-            <div key={t.id} onClick={() => onEdit(t)} className="flex justify-between py-4 border-b border-[rgba(0,0,0,0.04)] last:border-0 cursor-pointer hover:bg-gray-50 px-4 -mx-4 rounded-xl transition-colors">
-               <div className="flex flex-col"><span className="font-bold text-gray-900">{t.symbol}</span><span className="text-xs text-gray-400 font-bold">{t.side}</span></div>
+            <div key={t.id} onClick={() => onEdit(t)} className="flex justify-between py-4 border-b border-[rgba(0,0,0,0.04)] dark:border-white/5 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 px-4 -mx-4 rounded-xl transition-colors">
+               <div className="flex flex-col"><span className="font-bold text-gray-900 dark:text-white">{t.symbol}</span><span className="text-xs text-gray-400 dark:text-gray-400 font-bold">{t.side}</span></div>
                <span className={`font-bold text-lg ${t.pnl >= 0 ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>{t.pnl >= 0 ? '+' : ''}{formatCurrency(t.pnl)}</span>
             </div>
           ))}
