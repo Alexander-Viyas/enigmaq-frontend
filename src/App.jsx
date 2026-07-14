@@ -375,7 +375,7 @@ export default function App() {
         editingTrade ? (
           <JournaledTradeModal trade={editingTrade} onClose={() => { setIsTradeModalOpen(false); setEditingTrade(null); }} />
         ) : (
-          <TradeModal trade={null} onClose={() => setIsTradeModalOpen(false)} onSave={handleSaveTrade} onDelete={handleDeleteTrade} setCurrentView={setCurrentView} />
+          <TradeModal trade={null} onClose={() => setIsTradeModalOpen(false)} onSave={handleSaveTrade} onDelete={handleDeleteTrade} setCurrentView={setCurrentView} strategies={strategies} setStrategies={setStrategies} />
         )
       )}
       {isDayModalOpen && <DayTradesModal date={selectedDayTrades.date} trades={selectedDayTrades.trades} onClose={() => setIsDayModalOpen(false)} onEdit={(t) => { setIsDayModalOpen(false); openEditModal(t); }} />}
@@ -1478,7 +1478,7 @@ function AccountModal({ onClose, onSelect }) {
   )
 }
 
-function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView }) {
+function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategies = [], setStrategies }) {
   useModalA11y(true, onClose);
   const isEdit = !!trade;
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -1489,6 +1489,8 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView }) {
   const [mistakeInput, setMistakeInput] = useState('');
   const [customTags, setCustomTags] = useState(trade?.tags || []);
   const [customTagInput, setCustomTagInput] = useState('');
+  const [isAddingInline, setIsAddingInline] = useState(false);
+  const [inlineName, setInlineName] = useState('');
   const journalPrompts = [
     { key: 'Entry Details', label: 'Entry', question: 'What exact trigger made you enter?', placeholder: 'Example: Pullback held VWAP and broke previous candle high.' },
     { key: 'Strategy', label: 'Strategy', question: 'Which strategy or model was this trade?', placeholder: 'Example: Opening range breakout, A+ continuation, liquidity sweep.' },
@@ -1570,6 +1572,29 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView }) {
       e.preventDefault();
       if (!customTags.includes(customTagInput.trim())) setCustomTags([...customTags, customTagInput.trim()]);
       setCustomTagInput('');
+    }
+  };
+
+  const toggleStrategy = (name) => {
+    if (customTags.includes(name)) {
+      setCustomTags(customTags.filter(t => t !== name));
+    } else {
+      setCustomTags([...customTags, name]);
+    }
+  };
+
+  const saveInlineStrategy = () => {
+    if (inlineName.trim()) {
+      const name = inlineName.trim();
+      if (!strategies.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+        const newStrat = { id: generateId(), name };
+        setStrategies([...strategies, newStrat]);
+        if (!customTags.includes(name)) {
+          setCustomTags([...customTags, name]);
+        }
+      }
+      setInlineName('');
+      setIsAddingInline(false);
     }
   };
 
@@ -1864,18 +1889,64 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView }) {
 
             {/* Strategies */}
             <div className="mx-4 mt-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-50 dark:border-white/5">
+              <div className="px-4 py-3 border-b border-gray-50 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-[#181818]">
                 <p className="text-xs font-bold text-slate-700 dark:text-gray-200">Strategies</p>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingInline(!isAddingInline)}
+                  className="text-[10px] font-bold text-orange-500 hover:text-orange-600 bg-transparent flex items-center gap-0.5"
+                >
+                  {isAddingInline ? 'Cancel' : '+ Add'}
+                </button>
               </div>
-              <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 dark:bg-white/5 rounded-xl flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-gray-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-500 dark:text-gray-400">No strategies found</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Attach a strategy to track performance</p>
-                </div>
-                <button type="button" onClick={() => { onClose(); setCurrentView('strategy'); }} className="mt-1 px-4 py-2 bg-slate-800 dark:bg-orange-500 text-white text-[10px] font-bold rounded-lg hover:bg-slate-700 dark:hover:bg-orange-600 transition-colors">Create Your First Strategy</button>
+              <div className="p-4 space-y-3 bg-white dark:bg-[#121212]">
+                {isAddingInline && (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={inlineName}
+                      onChange={e => setInlineName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && saveInlineStrategy()}
+                      placeholder="Strategy Name"
+                      className="flex-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold focus:outline-none focus:ring-1 focus:ring-orange-400 dark:text-white"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={saveInlineStrategy}
+                      className="px-2.5 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold rounded-lg transition-colors"
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
+                
+                {(!strategies || strategies.length === 0) ? (
+                  <div className="py-4 flex flex-col items-center justify-center text-center gap-2 bg-white dark:bg-[#121212]">
+                    <Activity className="w-5 h-5 text-gray-400" />
+                    <div>
+                      <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400">No strategies created</p>
+                      <p className="text-[9px] text-gray-450 dark:text-gray-500 mt-0.5">Create one above to attach it to this trade.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 max-h-[140px] overflow-y-auto pr-1">
+                    {strategies.map(s => {
+                      const isAttached = customTags.includes(s.name);
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => toggleStrategy(s.name)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 ${isAttached ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/10' : 'bg-gray-50 dark:bg-white/5 text-slate-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10'}`}
+                        >
+                          {isAttached && <span className="text-[10px]">✓</span>}
+                          {s.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
