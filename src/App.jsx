@@ -44,9 +44,32 @@ const getInputDate = (date) => {
   return new Date(date).toISOString().split('T')[0];
 };
 
-const calcPnL = (side, entry, exit, qty, fees = 0) => {
+const calcPnL = (side, entry, exit, qty, fees = 0, symbol = '') => {
   if (!entry || !exit || !qty) return 0;
-  const gross = side === 'Long' ? (exit - entry) * qty : (entry - exit) * qty;
+  
+  let multiplier = 1;
+  if (symbol) {
+    const symUpper = symbol.toUpperCase().trim();
+    if (symUpper.startsWith('MNQ')) {
+      multiplier = 2;
+    } else if (symUpper.startsWith('NQ')) {
+      multiplier = 20;
+    } else if (symUpper.startsWith('MES')) {
+      multiplier = 5;
+    } else if (symUpper.startsWith('ES')) {
+      multiplier = 50;
+    } else if (symUpper.startsWith('MYM')) {
+      multiplier = 0.5;
+    } else if (symUpper.startsWith('YM')) {
+      multiplier = 5;
+    } else if (symUpper.startsWith('M2K')) {
+      multiplier = 5;
+    } else if (symUpper.startsWith('RTY')) {
+      multiplier = 50;
+    }
+  }
+
+  const gross = side === 'Long' ? (exit - entry) * qty * multiplier : (entry - exit) * qty * multiplier;
   return gross - (fees || 0);
 };
 
@@ -206,7 +229,7 @@ export default function App() {
     setIsSettingsOpen(false);
   };
 
-  const handleSaveTrade = (tradeData) => {
+  const handleSaveTrade = (tradeData, shouldClose = true) => {
     const newTrade = { ...tradeData, accountId: selectedAccountId };
     if (editingTrade) setAllTrades(allTrades.map(t => t.id === editingTrade.id ? newTrade : t));
     else setAllTrades([newTrade, ...allTrades].sort((a, b) => new Date(b.exitDate) - new Date(a.exitDate)));
@@ -231,8 +254,10 @@ export default function App() {
         return exists ? prev.map(n => n.tradeId === newTrade.id ? note : n) : [note, ...prev];
       });
     }
-    setIsTradeModalOpen(false);
-    setEditingTrade(null);
+    if (shouldClose) {
+      setIsTradeModalOpen(false);
+      setEditingTrade(null);
+    }
   };
 
   const handleDeleteTrade = (id) => {
@@ -245,9 +270,8 @@ export default function App() {
 
   const navItems = [
     { id: 'dashboard', icon: LayoutDashboard }, { id: 'log', icon: List },
-    { id: 'stats', icon: BarChart3 }, { id: 'day', icon: CalendarDays },
-    { id: 'progress', icon: Target }, { id: 'strategy', icon: Activity },
-    { id: 'journal', icon: BookOpen }, { id: 'zen', icon: Wind }
+    { id: 'stats', icon: BarChart3 }, { id: 'progress', icon: Target },
+    { id: 'zen', icon: Wind }
   ];
 
   return (
@@ -260,9 +284,20 @@ export default function App() {
       `}</style>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0 pb-16">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <header className="h-14 flex items-center justify-between px-6 bg-white dark:bg-[#121212] z-10 shrink-0 border-b border-gray-100 dark:border-white/5">
-          <h1 className="text-base font-bold text-slate-800 dark:text-white capitalize">{currentView.replace('-', ' ')}</h1>
+          <div className="flex items-center gap-3">
+            {currentView !== 'dashboard' && (
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-gray-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center justify-center"
+                aria-label="Back to Dashboard"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
+            <h1 className="text-base font-bold text-slate-800 dark:text-white capitalize">{currentView.replace('-', ' ')}</h1>
+          </div>
           
           <div className="flex items-center gap-2">
             <button onClick={() => setIsStartDayOpen(true)} className="hidden md:flex px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-gray-100 transition-colors">
@@ -325,8 +360,8 @@ export default function App() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-5 py-5 relative">
-          {currentView === 'dashboard' && <DashboardView trades={trades} dashboardDate={dashboardDate} setDashboardDate={setDashboardDate} onDayClick={(date, dayTrades) => { setSelectedDayTrades({ date, trades: dayTrades }); setIsDayModalOpen(true); }}/>}
+        <main className="flex-1 overflow-y-auto px-5 pt-5 pb-32 relative">
+          {currentView === 'dashboard' && <DashboardView trades={trades} dashboardDate={dashboardDate} setDashboardDate={setDashboardDate} onDayClick={(date, dayTrades) => { setSelectedDayTrades({ date, trades: dayTrades }); setIsDayModalOpen(true); }} setCurrentView={setCurrentView} />}
           {currentView === 'log' && <TradeLogView trades={trades} onEdit={openEditModal} />}
           {currentView === 'stats' && <StatsView trades={trades} />}
           {currentView === 'day' && <DayView trades={trades} dashboardDate={dashboardDate} onEdit={openEditModal} />}
@@ -337,8 +372,11 @@ export default function App() {
         </main>
       </div>
 
+      {/* Bottom Blur Floor */}
+      <div className="fixed bottom-0 left-0 right-0 h-24 bg-[#f8f9fa]/70 dark:bg-[#0a0a0a]/70 backdrop-blur-xl border-t border-slate-200/20 dark:border-white/5 z-30 pointer-events-none" />
+
       {/* Bottom Floating Navigation */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/80 dark:bg-[#121212]/80 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-2 rounded-2xl shadow-xl z-40">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/60 dark:bg-[#121212]/60 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 p-2 rounded-2xl shadow-xl z-40">
         {navItems.map(nav => (
           <button
             key={nav.id}
@@ -373,7 +411,14 @@ export default function App() {
       
       {isTradeModalOpen && (
         editingTrade ? (
-          <JournaledTradeModal trade={editingTrade} onClose={() => { setIsTradeModalOpen(false); setEditingTrade(null); }} />
+          <JournaledTradeModal 
+            trade={editingTrade} 
+            onClose={() => { setIsTradeModalOpen(false); setEditingTrade(null); }} 
+            onUpdate={(updatedTrade) => {
+              handleSaveTrade(updatedTrade, false);
+              setEditingTrade(updatedTrade);
+            }}
+          />
         ) : (
           <TradeModal trade={null} onClose={() => setIsTradeModalOpen(false)} onSave={handleSaveTrade} onDelete={handleDeleteTrade} setCurrentView={setCurrentView} strategies={strategies} setStrategies={setStrategies} />
         )
@@ -385,7 +430,7 @@ export default function App() {
 
 // --- CORE VIEWS ---
 
-function DashboardView({ trades, dashboardDate, setDashboardDate, onDayClick }) {
+function DashboardView({ trades, dashboardDate, setDashboardDate, onDayClick, setCurrentView }) {
   const filteredTrades = useMemo(() => {
     const start = new Date(dashboardDate.getFullYear(), dashboardDate.getMonth(), 1).getTime();
     const end = new Date(dashboardDate.getFullYear(), dashboardDate.getMonth() + 1, 0, 23, 59, 59).getTime();
@@ -718,6 +763,47 @@ function DashboardView({ trades, dashboardDate, setDashboardDate, onDayClick }) 
           </table>
         </div>
       </div>
+
+      {/* Dashboard Quick Navigation Tiles */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        {[
+          { 
+            title: 'Strategy Performance', 
+            desc: 'Evaluate stats, win rates, and profit factors across your setups', 
+            view: 'strategy',
+            icon: Activity,
+            color: 'from-orange-500/10 to-orange-500/5 hover:border-orange-500/30 text-orange-400' 
+          },
+          { 
+            title: 'Execution Calendar', 
+            desc: 'Analyze daily return maps and browse trade lists by date', 
+            view: 'day',
+            icon: CalendarDays,
+            color: 'from-blue-500/10 to-blue-500/5 hover:border-blue-500/30 text-blue-400' 
+          },
+          { 
+            title: 'Daily Journal Notes', 
+            desc: 'Access folder archives, write psychology reviews, and organize notes', 
+            view: 'journal',
+            icon: BookOpen,
+            color: 'from-emerald-500/10 to-emerald-500/5 hover:border-emerald-500/30 text-emerald-400' 
+          }
+        ].map((tile, idx) => (
+          <div 
+            key={idx}
+            onClick={() => setCurrentView(tile.view)}
+            className="cursor-pointer rounded-xl p-5 border border-[#1e293b]/10 dark:border-white/5 bg-gradient-to-br bg-[#121212]/30 dark:bg-transparent hover:bg-[#121212]/50 hover:dark:bg-[#121212]/30 transition-all duration-300 shadow-sm flex items-start gap-4 hover:shadow-md hover:scale-[1.01]"
+          >
+            <div className={`p-3 bg-white/5 rounded-xl border border-white/5 shrink-0 ${tile.color}`}>
+              <tile.icon className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-slate-800 dark:text-white font-bold text-sm tracking-wide">{tile.title}</h4>
+              <p className="text-[10.5px] text-gray-500 dark:text-gray-400 leading-relaxed mt-1 font-medium">{tile.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -837,50 +923,310 @@ function TradeLogView({ trades, onEdit }) {
 }
 
 function StatsView({ trades }) {
+  const [statsSubTab, setStatsSubTab] = useState('Details'); // 'Details' | 'Overview'
   const [tab, setTab] = useState('Summary');
   const dStats = useMemo(() => calculateTradeStats(trades), [trades]);
+
+  const categoryStats = useMemo(() => {
+    const sMap = {};
+    trades.forEach(t => {
+      const cat = t.tradeType || 'Futures';
+      if (!sMap[cat]) sMap[cat] = { count: 0, wins: 0, pnl: 0, grossWin: 0, grossLoss: 0 };
+      sMap[cat].count++;
+      sMap[cat].pnl += t.pnl;
+      if (t.pnl > 0) {
+        sMap[cat].wins++;
+        sMap[cat].grossWin += t.pnl;
+      } else {
+        sMap[cat].grossLoss += Math.abs(t.pnl);
+      }
+    });
+    return Object.entries(sMap).map(([name, s]) => {
+      const winRate = s.count ? (s.wins / s.count) : 0;
+      const profitFactor = s.grossLoss === 0 ? (s.grossWin > 0 ? 99 : 0) : s.grossWin / s.grossLoss;
+      return { name, ...s, winRate, profitFactor };
+    }).sort((a, b) => b.count - a.count);
+  }, [trades]);
+
+  const sideStats = useMemo(() => {
+    let longCount = 0, longWins = 0, longPnl = 0;
+    let shortCount = 0, shortWins = 0, shortPnl = 0;
+    trades.forEach(t => {
+      if (t.side === 'Long') {
+        longCount++;
+        longPnl += t.pnl;
+        if (t.pnl > 0) longWins++;
+      } else {
+        shortCount++;
+        shortPnl += t.pnl;
+        if (t.pnl > 0) shortWins++;
+      }
+    });
+    return {
+      long: { count: longCount, winRate: longCount ? (longWins / longCount) : 0, pnl: longPnl },
+      short: { count: shortCount, winRate: shortCount ? (shortWins / shortCount) : 0, pnl: shortPnl }
+    };
+  }, [trades]);
+
+  const bestWorst = useMemo(() => {
+    if (!trades.length) return { best: null, worst: null };
+    const sorted = [...trades].sort((a, b) => b.pnl - a.pnl);
+    return {
+      best: sorted[0],
+      worst: sorted[sorted.length - 1]
+    };
+  }, [trades]);
 
   return (
     <div className="space-y-6 max-w-[1500px] mx-auto text-slate-800 dark:text-gray-100">
       <div className="flex gap-6 border-b border-gray-200 dark:border-white/5">
-        <button className="px-2 py-4 font-bold text-orange-500 border-b-2 border-orange-500">Details</button>
-        <button className="px-2 py-4 font-bold text-gray-400">Overview</button>
+        <button 
+          onClick={() => setStatsSubTab('Details')}
+          className={`px-2 py-4 font-bold border-b-2 transition-all ${
+            statsSubTab === 'Details' ? 'text-orange-500 border-orange-500' : 'text-gray-400 border-transparent hover:text-gray-200'
+          }`}
+        >
+          Details
+        </button>
+        <button 
+          onClick={() => setStatsSubTab('Overview')}
+          className={`px-2 py-4 font-bold border-b-2 transition-all ${
+            statsSubTab === 'Overview' ? 'text-orange-500 border-orange-500' : 'text-gray-400 border-transparent hover:text-gray-200'
+          }`}
+        >
+          Overview
+        </button>
       </div>
-      <div className="flex gap-4 items-center">
-        <select className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 font-bold text-sm shadow-sm dark:text-white"><option>Net P&L</option></select>
-        <button className="flex items-center gap-2 text-sm font-bold bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 dark:text-white"><Download size={16}/> Export</button>
-      </div>
-      <div className="bg-white dark:bg-[#121212] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 h-[300px] relative">
-        <div className="absolute top-6 right-6 flex gap-2">
-           <select className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded px-2 py-1 text-xs font-bold dark:text-white"><option>Net P&L</option></select>
-           <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded flex overflow-hidden text-xs font-bold dark:text-white"><button className="px-3 py-1 bg-white dark:bg-white/10">Day</button><button className="px-3 py-1 dark:hover:bg-white/5">Week</button><button className="px-3 py-1 dark:hover:bg-white/5">Month</button></div>
-        </div>
-        <Line data={{ labels: trades.map(t=>formatDate(t.exitDate)).reverse(), datasets: [{ data: trades.map(t=>t.pnl).reverse(), borderColor: '#f5860a', borderWidth: 2, tension: 0.3 }] }} options={{ maintainAspectRatio: false, plugins: { legend: {display:false} } }} />
-      </div>
-      <div>
-        <div className="flex gap-6 mb-6">
-          {['Summary', 'Days', 'Trades'].map(t => <button key={t} onClick={()=>setTab(t)} className={`font-bold text-sm ${tab===t?'text-orange-500':'text-gray-400'}`}>{t}</button>)}
-        </div>
-        {tab === 'Summary' && (
-          <div className="bg-white dark:bg-[#121212] rounded-2xl p-8 shadow-sm grid grid-cols-4 gap-8 divide-x divide-gray-100 dark:divide-white/5 border border-transparent dark:border-white/5">
-            <div className="flex flex-col gap-6 pr-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Net P&L</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.net)}</div></div>
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Win %</div><div className="text-xl font-bold dark:text-white">{formatPercent(dStats.winRate)}</div></div>
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Profit Factor</div><div className="text-xl font-bold dark:text-white">{dStats.pf === Infinity ? '∞' : dStats.pf.toFixed(2)}</div></div>
+
+      {statsSubTab === 'Details' ? (
+        <>
+          <div className="flex gap-4 items-center">
+            <select className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 font-bold text-sm shadow-sm dark:text-white"><option>Net P&L</option></select>
+            <button className="flex items-center gap-2 text-sm font-bold bg-white dark:bg-[#121212] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 dark:text-white"><Download size={16}/> Export</button>
+          </div>
+          <div className="bg-white dark:bg-[#121212] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 h-[300px] relative">
+            <div className="absolute top-6 right-6 flex gap-2">
+               <select className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded px-2 py-1 text-xs font-bold dark:text-white"><option>Net P&L</option></select>
+               <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded flex overflow-hidden text-xs font-bold dark:text-white"><button className="px-3 py-1 bg-white dark:bg-white/10">Day</button><button className="px-3 py-1 dark:hover:bg-white/5">Week</button><button className="px-3 py-1 dark:hover:bg-white/5">Month</button></div>
             </div>
-            <div className="flex flex-col gap-6 px-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Trade Expectancy</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.ev)}</div></div>
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Hold Time</div><div className="text-xl font-bold dark:text-white">1d 4h</div></div>
+            <Line data={{ labels: trades.map(t=>formatDate(t.exitDate)).reverse(), datasets: [{ data: trades.map(t=>t.pnl).reverse(), borderColor: '#f5860a', borderWidth: 2, tension: 0.3 }] }} options={{ maintainAspectRatio: false, plugins: { legend: {display:false} } }} />
+          </div>
+          <div>
+            <div className="flex gap-6 mb-6">
+              {['Summary', 'Days', 'Trades'].map(t => <button key={t} onClick={()=>setTab(t)} className={`font-bold text-sm ${tab===t?'text-orange-500':'text-gray-400'}`}>{t}</button>)}
             </div>
-            <div className="flex flex-col gap-6 px-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Net Trade P&L</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.net / (trades.length||1))}</div></div>
+            {tab === 'Summary' && (
+              <div className="bg-white dark:bg-[#121212] rounded-2xl p-8 shadow-sm grid grid-cols-4 gap-8 divide-x divide-gray-100 dark:divide-white/5 border border-transparent dark:border-white/5">
+                <div className="flex flex-col gap-6 pr-8">
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Net P&L</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.net)}</div></div>
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Win %</div><div className="text-xl font-bold dark:text-white">{formatPercent(dStats.winRate)}</div></div>
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Profit Factor</div><div className="text-xl font-bold dark:text-white">{dStats.pf === Infinity ? '∞' : dStats.pf.toFixed(2)}</div></div>
+                </div>
+                <div className="flex flex-col gap-6 px-8">
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Trade Expectancy</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.ev)}</div></div>
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Hold Time</div><div className="text-xl font-bold dark:text-white">1d 4h</div></div>
+                </div>
+                <div className="flex flex-col gap-6 px-8">
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Net Trade P&L</div><div className="text-xl font-bold dark:text-white">{formatCurrency(dStats.net / (trades.length||1))}</div></div>
+                </div>
+                <div className="flex flex-col gap-6 pl-8">
+                   <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Logged Days</div><div className="text-xl font-bold dark:text-white">{new Set(trades.map(t=>t.exitDate.split('T')[0])).size}</div></div>
+                </div>
+              </div>
+            )}
+            {tab === 'Days' && (
+              <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs whitespace-nowrap">
+                    <thead className="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 text-gray-400 text-[10px] uppercase tracking-wide">
+                      <tr>
+                        <th className="px-4 py-2.5 font-bold">Date</th>
+                        <th className="px-4 py-2.5 font-bold text-center">Trades Logged</th>
+                        <th className="px-4 py-2.5 font-bold text-right">Net P&L</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-white/5">
+                      {Object.entries(
+                        trades.reduce((m, t) => {
+                          const d = t.exitDate.split('T')[0];
+                          if (!m[d]) m[d] = { count: 0, pnl: 0 };
+                          m[d].count++; m[d].pnl += t.pnl;
+                          return m;
+                        }, {})
+                      ).sort((a,b) => new Date(b[0]) - new Date(a[0])).map(([date, d]) => (
+                        <tr key={date} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                          <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-gray-205">{formatDate(date)}</td>
+                          <td className="px-4 py-2.5 text-center text-gray-500 font-semibold">{d.count}</td>
+                          <td className={`px-4 py-2.5 text-right font-bold ${d.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>{d.pnl > 0 ? '+' : ''}{formatCurrency(d.pnl)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {tab === 'Trades' && (
+              <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs whitespace-nowrap">
+                    <thead className="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 text-gray-400 text-[10px] uppercase tracking-wide">
+                      <tr>
+                        <th className="px-4 py-2.5 font-bold">Symbol</th>
+                        <th className="px-4 py-2.5 font-bold text-center">Side</th>
+                        <th className="px-4 py-2.5 font-bold text-center">Outcome</th>
+                        <th className="px-4 py-2.5 font-bold text-right">Net P&L</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-white/5">
+                      {trades.map((t, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                          <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-gray-205">{t.symbol}</td>
+                          <td className="px-4 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${t.side === 'Long' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>{t.side}</span></td>
+                          <td className="px-4 py-2.5 text-center"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.pnl > 0 ? 'text-green-600 bg-green-50' : t.pnl < 0 ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-550 dark:text-gray-400 dark:bg-white/5'}`}>{t.pnl > 0 ? 'Win' : t.pnl < 0 ? 'Loss' : 'BE'}</span></td>
+                          <td className={`px-4 py-2.5 text-right font-bold ${t.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>{t.pnl > 0 ? '+' : ''}{formatCurrency(t.pnl)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Overview Dashboard Sub-tab Layout */
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            
+            {/* Side Performance */}
+            <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Side Performance</h3>
+              <div className="grid grid-cols-2 gap-4">
+                
+                <div className="bg-green-50 dark:bg-green-500/5 border border-green-100 dark:border-green-500/10 rounded-xl p-4 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">Long Trades</span>
+                    <div className="text-2xl font-extrabold text-slate-800 dark:text-white mt-1">{sideStats.long.count}</div>
+                  </div>
+                  <div className="mt-4 space-y-1">
+                    <div className="flex justify-between text-xs font-semibold text-gray-500">
+                      <span>Win Rate</span>
+                      <span className="text-green-600 font-bold">{formatPercent(sideStats.long.winRate)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold text-gray-500">
+                      <span>Net return</span>
+                      <span className={`font-bold ${sideStats.long.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>{sideStats.long.pnl >= 0 ? '+' : ''}{formatCurrency(sideStats.long.pnl)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10 rounded-xl p-4 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Short Trades</span>
+                    <div className="text-2xl font-extrabold text-slate-800 dark:text-white mt-1">{sideStats.short.count}</div>
+                  </div>
+                  <div className="mt-4 space-y-1">
+                    <div className="flex justify-between text-xs font-semibold text-gray-500">
+                      <span>Win Rate</span>
+                      <span className="text-red-500 font-bold">{formatPercent(sideStats.short.winRate)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold text-gray-500">
+                      <span>Net return</span>
+                      <span className={`font-bold ${sideStats.short.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>{sideStats.short.pnl >= 0 ? '+' : ''}{formatCurrency(sideStats.short.pnl)}</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             </div>
-            <div className="flex flex-col gap-6 pl-8">
-               <div><div className="text-xs font-bold text-gray-400 uppercase mb-1">Logged Days</div><div className="text-xl font-bold dark:text-white">{new Set(trades.map(t=>t.exitDate.split('T')[0])).size}</div></div>
+
+            {/* Extreme Trades */}
+            <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Extreme Trades</h3>
+              <div className="grid grid-cols-2 gap-4">
+                
+                <div className="bg-gray-50 dark:bg-white/5 border border-gray-150 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Best Trade</span>
+                    {bestWorst.best ? (
+                      <>
+                        <div className="text-lg font-bold text-slate-800 dark:text-white mt-1">{bestWorst.best.symbol} <span className="text-xs text-gray-400 font-normal">{bestWorst.best.side}</span></div>
+                        <div className="text-xs text-gray-400 mt-0.5">{formatDate(bestWorst.best.exitDate)}</div>
+                      </>
+                    ) : (
+                      <div className="text-xs text-gray-500 mt-2">No trades</div>
+                    )}
+                  </div>
+                  <div className="text-xl font-black text-green-600 mt-4">
+                    {bestWorst.best ? `+${formatCurrency(bestWorst.best.pnl)}` : '-'}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-white/5 border border-gray-150 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Worst Trade</span>
+                    {bestWorst.worst ? (
+                      <>
+                        <div className="text-lg font-bold text-slate-800 dark:text-white mt-1">{bestWorst.worst.symbol} <span className="text-xs text-gray-400 font-normal">{bestWorst.worst.side}</span></div>
+                        <div className="text-xs text-gray-400 mt-0.5">{formatDate(bestWorst.worst.exitDate)}</div>
+                      </>
+                    ) : (
+                      <div className="text-xs text-gray-500 mt-2">No trades</div>
+                    )}
+                  </div>
+                  <div className="text-xl font-black text-red-500 mt-4">
+                    {bestWorst.worst ? formatCurrency(bestWorst.worst.pnl) : '-'}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          {/* Performance by Category */}
+          <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Performance by Category</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs whitespace-nowrap">
+                <thead className="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 text-gray-400 text-[10px] uppercase tracking-wide">
+                  <tr>
+                    <th className="px-5 py-3 font-bold">Category</th>
+                    <th className="px-5 py-3 font-bold text-center">Trades</th>
+                    <th className="px-5 py-3 font-bold text-center">Win Rate</th>
+                    <th className="px-5 py-3 font-bold text-center">Profit Factor</th>
+                    <th className="px-5 py-3 font-bold text-right">Net P&L</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-white/5">
+                  {categoryStats.length === 0 ? (
+                    <tr><td colSpan="5" className="px-5 py-8 text-center text-gray-400">No trade breakdown data available</td></tr>
+                  ) : (
+                    categoryStats.map((c, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                        <td className="px-5 py-3 font-bold text-slate-700 dark:text-gray-200">{c.name}</td>
+                        <td className="px-5 py-3 text-center text-gray-500 font-semibold">{c.count}</td>
+                        <td className="px-5 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="font-bold w-8 text-right text-gray-700 dark:text-gray-300">{formatPercent(c.winRate)}</span>
+                            <div className="w-20 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                              <div className={`h-full ${c.winRate >= 0.5 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${c.winRate * 100}%` }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-center text-gray-500 font-semibold">{c.profitFactor.toFixed(2)}</td>
+                        <td className={`px-5 py-3 text-right font-bold ${c.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>{c.pnl > 0 ? '+' : ''}{formatCurrency(c.pnl)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1072,6 +1418,13 @@ function StrategyView({ trades, strategies, setStrategies }) {
   // Aggregate strategy stats from trade tags (same logic as Dashboard)
   const strategyStats = useMemo(() => {
     const sMap = {};
+
+    // Initialize with all predefined/saved strategies
+    strategies.forEach(s => {
+      sMap[s.name] = { count: 0, wins: 0, pnl: 0, grossWin: 0, grossLoss: 0 };
+    });
+
+    // Accumulate actual trade statistics
     trades.forEach(t => {
       if (t.tags && t.tags.length > 0) {
         t.tags.forEach(tag => {
@@ -1083,17 +1436,26 @@ function StrategyView({ trades, strategies, setStrategies }) {
         });
       }
     });
-    return Object.entries(sMap).map(([name, s]) => ({
-      name, ...s,
-      winRate: s.wins / s.count,
-      profitFactor: s.grossLoss === 0 ? (s.grossWin > 0 ? 99 : 0) : s.grossWin / s.grossLoss
-    })).sort((a, b) => b.pnl - a.pnl);
-  }, [trades]);
 
-  const best = strategyStats[0];
-  const worst = strategyStats[strategyStats.length - 1];
-  const bestWR = [...strategyStats].sort((a,b) => b.winRate - a.winRate)[0];
-  const mostActive = [...strategyStats].sort((a,b) => b.count - a.count)[0];
+    return Object.entries(sMap).map(([name, s]) => {
+      const match = strategies.find(strat => strat.name.toLowerCase() === name.toLowerCase());
+      return {
+        id: match ? match.id : name,
+        isCustom: !!match,
+        name, ...s,
+        winRate: s.count > 0 ? s.wins / s.count : 0,
+        profitFactor: s.count === 0 ? 0 : (s.grossLoss === 0 ? (s.grossWin > 0 ? 99 : 0) : s.grossWin / s.grossLoss)
+      };
+    }).sort((a, b) => b.pnl - a.pnl);
+  }, [trades, strategies]);
+
+  // Only calculate metrics from strategies that actually have trades
+  const activeStrategyStats = useMemo(() => strategyStats.filter(s => s.count > 0), [strategyStats]);
+
+  const best = activeStrategyStats[0];
+  const worst = activeStrategyStats[activeStrategyStats.length - 1];
+  const bestWR = [...activeStrategyStats].sort((a,b) => b.winRate - a.winRate)[0];
+  const mostActive = [...activeStrategyStats].sort((a,b) => b.count - a.count)[0];
 
   const saveNewStrategy = () => {
     if (newName.trim()) {
@@ -1121,7 +1483,7 @@ function StrategyView({ trades, strategies, setStrategies }) {
       </div>
 
       <div className="flex justify-between items-center">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{strategyStats.length} strategies from trade tags</p>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{strategyStats.length} strategies</p>
         {isAdding ? (
           <div className="flex gap-2">
             <input type="text" autoFocus value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveNewStrategy()} className="border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121212] text-slate-800 dark:text-white rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="Strategy Name" />
@@ -1149,11 +1511,12 @@ function StrategyView({ trades, strategies, setStrategies }) {
                 <th className="px-4 py-3 font-bold text-center">Win Rate</th>
                 <th className="px-4 py-3 font-bold text-center">Profit Factor</th>
                 <th className="px-4 py-3 font-bold text-right">Net P&L</th>
+                <th className="px-4 py-3 font-bold text-center w-20">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-white/5">
               {strategyStats.map((s, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-white/5 group">
                   <td className="px-4 py-2.5 font-bold text-slate-700 dark:text-gray-200">{s.name}</td>
                   <td className="px-4 py-2.5 text-center text-gray-500 dark:text-gray-400 font-semibold">{s.count}</td>
                   <td className="px-4 py-2.5 text-center">
@@ -1166,6 +1529,23 @@ function StrategyView({ trades, strategies, setStrategies }) {
                   </td>
                   <td className="px-4 py-2.5 text-center font-semibold text-gray-600 dark:text-gray-400">{s.profitFactor === 99 ? '∞' : s.profitFactor.toFixed(2)}</td>
                   <td className={`px-4 py-2.5 text-right font-bold ${s.pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>{s.pnl > 0 ? '+' : ''}{formatCurrency(s.pnl)}</td>
+                  <td className="px-4 py-2.5 text-center">
+                    {s.isCustom ? (
+                      <button 
+                        onClick={() => {
+                          if (window.confirm(`Delete strategy "${s.name}"?`)) {
+                            setStrategies(strategies.filter(st => st.id !== s.id));
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-650 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto p-1 hover:bg-red-50 dark:hover:bg-red-500/10 rounded"
+                        title="Delete Strategy"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <span className="text-gray-450 dark:text-gray-500 text-[10px] italic">From trades</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -1491,6 +1871,24 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
   const [customTagInput, setCustomTagInput] = useState('');
   const [isAddingInline, setIsAddingInline] = useState(false);
   const [inlineName, setInlineName] = useState('');
+  const [attachments, setAttachments] = useState(trade?.attachments || []);
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAttachments(prev => [...prev, {
+          id: generateId(),
+          name: file.name,
+          type: file.type,
+          url: reader.result
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const journalPrompts = [
     { key: 'Entry Details', label: 'Entry', question: 'What exact trigger made you enter?', placeholder: 'Example: Pullback held VWAP and broke previous candle high.' },
     { key: 'Strategy', label: 'Strategy', question: 'Which strategy or model was this trade?', placeholder: 'Example: Opening range breakout, A+ continuation, liquidity sweep.' },
@@ -1512,8 +1910,8 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
     entryTime: '', exitTime: '',
   });
 
-  const pnlPreview = useMemo(() => calcPnL(formData.side, parseFloat(formData.entryPrice), parseFloat(formData.exitPrice), parseFloat(formData.quantity), parseFloat(formData.fees)), [formData]);
-  const grossPnL = useMemo(() => calcPnL(formData.side, parseFloat(formData.entryPrice), parseFloat(formData.exitPrice), parseFloat(formData.quantity), 0), [formData]);
+  const pnlPreview = useMemo(() => calcPnL(formData.side, parseFloat(formData.entryPrice), parseFloat(formData.exitPrice), parseFloat(formData.quantity), parseFloat(formData.fees), formData.symbol), [formData]);
+  const grossPnL = useMemo(() => calcPnL(formData.side, parseFloat(formData.entryPrice), parseFloat(formData.exitPrice), parseFloat(formData.quantity), 0, formData.symbol), [formData]);
 
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -1524,6 +1922,7 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
       quantity: parseFloat(formData.quantity) || 0, fees: parseFloat(formData.fees || 0),
       symbol: formData.symbol.toUpperCase(), pnl: pnlPreview, rulesFollowed: true,
       tradeType, tradeRating, mistakeTags, tags: customTags, journalAnswers,
+      attachments,
     });
   };
 
@@ -1626,20 +2025,50 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
     // Futures
     { s: 'ES', n: 'E-mini S&P 500', cat: 'Futures' },
     { s: 'NQ', n: 'E-mini NASDAQ 100', cat: 'Futures' },
+    { s: 'MES', n: 'Micro E-mini S&P 500', cat: 'Futures' },
+    { s: 'MNQ', n: 'Micro E-mini NASDAQ 100', cat: 'Futures' },
     { s: 'YM', n: 'Mini-DOW', cat: 'Futures' },
+    { s: 'MYM', n: 'Micro E-mini Dow Jones', cat: 'Futures' },
     { s: 'RTY', n: 'E-mini Russell 2000', cat: 'Futures' },
+    { s: 'M2K', n: 'Micro E-mini Russell 2000', cat: 'Futures' },
     { s: 'CL', n: 'Crude Oil', cat: 'Futures' },
+    { s: 'MCL', n: 'Micro Crude Oil', cat: 'Futures' },
     { s: 'GC', n: 'Gold', cat: 'Futures' },
+    { s: 'SI', n: 'Silver', cat: 'Futures' },
+    { s: 'HG', n: 'Copper', cat: 'Futures' },
+    { s: 'NG', n: 'Natural Gas', cat: 'Futures' },
+    { s: 'ZB', n: 'U.S. Treasury Bond', cat: 'Futures' },
+    { s: 'ZN', n: '10-Year T-Note', cat: 'Futures' },
     // Forex
     { s: 'EURUSD', n: 'Euro / US Dollar', cat: 'Forex' },
     { s: 'GBPUSD', n: 'British Pound / US Dollar', cat: 'Forex' },
     { s: 'USDJPY', n: 'US Dollar / Japanese Yen', cat: 'Forex' },
     { s: 'AUDUSD', n: 'Australian Dollar / US Dollar', cat: 'Forex' },
     { s: 'USDCAD', n: 'US Dollar / Canadian Dollar', cat: 'Forex' },
+    { s: 'USDCHF', n: 'US Dollar / Swiss Franc', cat: 'Forex' },
+    { s: 'NZDUSD', n: 'New Zealand Dollar / US Dollar', cat: 'Forex' },
+    { s: 'EURGBP', n: 'Euro / British Pound', cat: 'Forex' },
+    { s: 'EURJPY', n: 'Euro / Japanese Yen', cat: 'Forex' },
+    { s: 'GBPJPY', n: 'British Pound / Japanese Yen', cat: 'Forex' },
+    { s: 'AUDJPY', n: 'Australian Dollar / Japanese Yen', cat: 'Forex' },
     // Crypto
     { s: 'BTC', n: 'Bitcoin', cat: 'Crypto' },
     { s: 'ETH', n: 'Ethereum', cat: 'Crypto' },
     { s: 'SOL', n: 'Solana', cat: 'Crypto' },
+    { s: 'BNB', n: 'BNB', cat: 'Crypto' },
+    { s: 'ADA', n: 'Cardano', cat: 'Crypto' },
+    { s: 'XRP', n: 'Ripple', cat: 'Crypto' },
+    { s: 'DOT', n: 'Polkadot', cat: 'Crypto' },
+    { s: 'DOGE', n: 'Dogecoin', cat: 'Crypto' },
+    { s: 'AVAX', n: 'Avalanche', cat: 'Crypto' },
+    { s: 'LINK', n: 'Chainlink', cat: 'Crypto' },
+    // Options
+    { s: 'SPY_OPT', n: 'S&P 500 ETF Options', cat: 'Options' },
+    { s: 'QQQ_OPT', n: 'NASDAQ-100 ETF Options', cat: 'Options' },
+    { s: 'IWM_OPT', n: 'Russell 2000 ETF Options', cat: 'Options' },
+    { s: 'AAPL_OPT', n: 'Apple Inc. Options', cat: 'Options' },
+    { s: 'TSLA_OPT', n: 'Tesla Inc. Options', cat: 'Options' },
+    { s: 'NVDA_OPT', n: 'NVIDIA Corp. Options', cat: 'Options' },
   ];
 
   const symbolQuery = formData.symbol.trim();
@@ -1661,7 +2090,7 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const inputCls = "w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 dark:text-gray-205 focus:ring-1 focus:ring-orange-400 focus:outline-none focus:bg-white dark:focus:bg-[#1a1a1a] transition-colors";
+  const inputCls = "w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-1 focus:ring-orange-400 focus:outline-none focus:bg-white dark:focus:bg-[#1a1a1a] transition-colors";
   const labelCls = "block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1";
 
   return (
@@ -1716,12 +2145,11 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
                       value={formData.symbol}
                       onChange={(e) => { handleChange(e); setSymbolOpen(true); }}
                       onFocus={() => setSymbolOpen(true)}
-                      className={`${inputCls} pr-8 uppercase font-bold`}
+                      className={`${inputCls} pr-3 uppercase font-bold`}
                       placeholder="e.g. AAPL"
                       autoComplete="off"
                       required
                     />
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                   </div>
                   {/* Dropdown */}
                   {symbolOpen && filteredSymbols.length > 0 && (
@@ -1771,19 +2199,39 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
                 </div>
               </div>
 
-              {/* Entry, Exit, Qty */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* Entry, SL, TP, Qty */}
+              <div className="grid grid-cols-4 gap-3">
                 <div>
                   <label className={labelCls}>Entry Price</label>
                   <input type="number" step="any" min="0" name="entryPrice" value={formData.entryPrice} onChange={handleChange} className={inputCls} placeholder="0.00" required />
                 </div>
                 <div>
-                  <label className={labelCls}>Exit Price</label>
-                  <input type="number" step="any" min="0" name="exitPrice" value={formData.exitPrice} onChange={handleChange} className={inputCls} placeholder="0.00" required />
+                  <label className={labelCls}>Stop Loss (SL)</label>
+                  <input type="number" step="any" name="stopLoss" value={formData.stopLoss} onChange={handleChange} className={inputCls} placeholder="$0.00" />
+                </div>
+                <div>
+                  <label className={labelCls}>Profit Target (TP)</label>
+                  <input type="number" step="any" name="profitTarget" value={formData.profitTarget} onChange={handleChange} className={inputCls} placeholder="$0.00" />
                 </div>
                 <div>
                   <label className={labelCls}>Quantity</label>
                   <input type="number" step="any" min="0.0001" name="quantity" value={formData.quantity} onChange={handleChange} className={inputCls} placeholder="0" required />
+                </div>
+              </div>
+
+              {/* Exit, Fees, Gross P&L */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelCls}>Exit Price</label>
+                  <input type="number" step="any" min="0" name="exitPrice" value={formData.exitPrice} onChange={handleChange} className={inputCls} placeholder="0.00" required />
+                </div>
+                <div>
+                  <label className={labelCls}>Commissions & Fees</label>
+                  <input type="number" step="any" min="0" name="fees" value={formData.fees} onChange={handleChange} className={inputCls} placeholder="$0.00" />
+                </div>
+                <div>
+                  <label className={labelCls}>Gross P&L</label>
+                  <div className={`${inputCls} ${grossPnL >= 0 ? 'text-green-600' : 'text-red-500'} cursor-default`}>{grossPnL >= 0 ? '+' : ''}{formatCurrency(grossPnL)}</div>
                 </div>
               </div>
 
@@ -1808,30 +2256,6 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
                 <div>
                   <label className={labelCls}>Exit Time</label>
                   <input type="time" name="exitTime" value={formData.exitTime} onChange={handleChange} className={inputCls} />
-                </div>
-              </div>
-
-              {/* Commissions & Gross P&L */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Commissions & Fees</label>
-                  <input type="number" step="any" min="0" name="fees" value={formData.fees} onChange={handleChange} className={inputCls} placeholder="$0.00" />
-                </div>
-                <div>
-                  <label className={labelCls}>Gross P&L</label>
-                  <div className={`${inputCls} ${grossPnL >= 0 ? 'text-green-600' : 'text-red-500'} cursor-default`}>{grossPnL >= 0 ? '+' : ''}{formatCurrency(grossPnL)}</div>
-                </div>
-              </div>
-
-              {/* Risk / Targets */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Profit Target</label>
-                  <input type="number" step="any" name="profitTarget" value={formData.profitTarget} onChange={handleChange} className={inputCls} placeholder="$0.00" />
-                </div>
-                <div>
-                  <label className={labelCls}>Stop Loss</label>
-                  <input type="number" step="any" name="stopLoss" value={formData.stopLoss} onChange={handleChange} className={inputCls} placeholder="$0.00" />
                 </div>
               </div>
 
@@ -1955,14 +2379,34 @@ function TradeModal({ trade, onClose, onSave, onDelete, setCurrentView, strategi
               <div className="px-4 py-3 border-b border-gray-50 dark:border-white/5">
                 <p className="text-xs font-bold text-slate-700 dark:text-gray-200">Attachments</p>
               </div>
-              <div className="p-4">
-                <label className="border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 dark:hover:bg-orange-500/5 transition-all group">
-                  <div className="w-9 h-9 bg-green-50 dark:bg-green-500/10 group-hover:bg-green-100 rounded-lg flex items-center justify-center transition-colors">
-                    <Download className="w-4 h-4 text-green-500 rotate-180" />
+              <div className="p-4 space-y-3">
+                {attachments.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 max-h-[140px] overflow-y-auto pr-1">
+                    {attachments.map(att => (
+                      <div key={att.id} className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 h-16 bg-gray-50 dark:bg-white/5 flex items-center justify-center">
+                        {att.type.startsWith('image/') ? (
+                          <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <FileText className="w-6 h-6 text-gray-400" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setAttachments(attachments.filter(a => a.id !== att.id))}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className="border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:border-orange-300 hover:bg-orange-50/30 dark:hover:bg-orange-500/5 transition-all group">
+                  <div className="w-8 h-8 bg-green-50 dark:bg-green-500/10 group-hover:bg-green-100 rounded-lg flex items-center justify-center transition-colors">
+                    <Download className="w-3.5 h-3.5 text-green-500 rotate-180" />
                   </div>
                   <p className="text-[10px] font-semibold text-gray-400">Add your media</p>
-                  <p className="text-[9px] text-gray-300">PNG, JPG, MP4 up to 10MB</p>
-                  <input type="file" className="hidden" accept="image/*,video/*" multiple />
+                  <p className="text-[8px] text-gray-300">PNG, JPG, MP4 up to 10MB</p>
+                  <input type="file" onChange={handleFileChange} className="hidden" accept="image/*,video/*" multiple />
                 </label>
               </div>
             </div>
